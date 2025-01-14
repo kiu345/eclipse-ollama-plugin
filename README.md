@@ -1,3 +1,7 @@
+# AssistAI - Ollama fork
+
+This fork is focused to use the AssistAI with Ollama, because the original version seems to be using a unsupported API.
+
 <p align="center"><img src="src/website/logo_110_80.png"></p>
 
 

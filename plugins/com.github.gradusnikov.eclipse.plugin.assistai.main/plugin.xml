@@ -3,7 +3,7 @@
 <plugin>
 
    <extension
-         id="com.github.gradusnikov.eclipse.assistai.fragment"
+         id="com.github.kiu345.eclipse.assistai.fragment"
          point="org.eclipse.e4.workbench.model">
       <fragment
             apply="always"
@@ -14,27 +14,27 @@
          point="org.eclipse.ui.preferencePages">
       
       <page
-            class="com.github.gradusnikov.eclipse.assistai.preferences.ModelPreferencePage"
-            id="com.github.gradusnikov.eclipse.assistai.preferences.OpenAIPreferencePage"
-            name="AssistAI">
+            class="com.github.kiu345.eclipse.assistai.preferences.ModelPreferencePage"
+            id="com.github.kiu345.eclipse.assistai.preferences.OpenAIPreferencePage"
+            name="AssistAI OLL">
       </page>
         <page
-            id="com.github.gradusnikov.eclipse.assistai.preferences.PromptsPreferencePage"
+            id="com.github.kiu345.eclipse.assistai.preferences.PromptsPreferencePage"
             name="Prompts"
-            category="com.github.gradusnikov.eclipse.assistai.preferences.OpenAIPreferencePage"
-            class="com.github.gradusnikov.eclipse.assistai.preferences.PromptsPreferencePage">
+            category="com.github.kiu345.eclipse.assistai.preferences.OpenAIPreferencePage"
+            class="com.github.kiu345.eclipse.assistai.preferences.PromptsPreferencePage">
         </page>      
         <page
-            id="com.github.gradusnikov.eclipse.assistai.preferences.ModelListPreferencePage"
+            id="com.github.kiu345.eclipse.assistai.preferences.ModelListPreferencePage"
             name="Models"
-            category="com.github.gradusnikov.eclipse.assistai.preferences.OpenAIPreferencePage"
-            class="com.github.gradusnikov.eclipse.assistai.preferences.ModelListPreferencePage">
+            category="com.github.kiu345.eclipse.assistai.preferences.OpenAIPreferencePage"
+            class="com.github.kiu345.eclipse.assistai.preferences.ModelListPreferencePage">
         </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="com.github.gradusnikov.eclipse.assistai.preferences.PreferenceInitializer">
+            class="com.github.kiu345.eclipse.assistai.preferences.PreferenceInitializer">
       </initializer>
    </extension>
 

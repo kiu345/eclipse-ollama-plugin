@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="com.github.gradusnikov.eclipse.assistai"
-      label="Assist AI"
+      id="com.github.kiu345.eclipse.assistai"
+      label="Assist AI OLL"
       version="1.0.2.qualifier"
       provider-name="WojciechGradkowski">
 
@@ -24,13 +24,13 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
    </license>
 
    <plugin
-         id="com.github.gradusnikov.eclipse.plugin.assistai.dependencies"
+         id="com.github.kiu345.eclipse.plugin.assistai.dependencies"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
 
    <plugin
-         id="com.github.gradusnikov.eclipse.plugin.assistai.main"
+         id="com.github.kiu345.eclipse.plugin.assistai.main"
          download-size="0"
          install-size="0"
          version="0.0.0"
