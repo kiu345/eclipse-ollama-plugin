@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: assistai-dependencies
 Bundle-SymbolicName: com.github.kiu345.eclipse.plugin.assistai.dependencies
-Bundle-Version: 1.0.3
+Bundle-Version: 1.0.4
 Bundle-ClassPath: selenium/auto-service-annotations-1.1.1.jar,
  selenium/byte-buddy-1.14.5.jar,
  selenium/checker-qual-3.33.0.jar,
@@ -74,7 +74,7 @@ Bundle-ClassPath: selenium/auto-service-annotations-1.1.1.jar,
  commons/commons-text-1.10.0.jar,
  tika/tika-core-2.9.1.jar,
  tika/tika-parser-text-module-2.9.1.jar
-Bundle-Vendor: Wojciech Gradkowski
+Bundle-Vendor: Stefan Daurer
 Export-Package: .,
  com.fasterxml.jackson.annotation,
  com.fasterxml.jackson.core,

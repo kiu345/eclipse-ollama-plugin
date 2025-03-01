@@ -1,9 +1,7 @@
 package com.github.kiu345.eclipse.assistai.services;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 
@@ -20,60 +18,49 @@ import jakarta.inject.Singleton;
  */
 @Creatable
 @Singleton
-public class ContentTypeDetector
-{
+public class ContentTypeDetector {
     private static final String UNKNOWN = "unknown";
-    private final Tika              tika;
+    private final Tika tika;
 
-    public ContentTypeDetector()
-    {
+    public ContentTypeDetector() {
         this.tika = new Tika();
     }
-    
-    public String detectCharset( byte[] content )
-    {
-        return new CharsetDetector().setText( content ).detect().getName();
+
+    public String detectCharset(byte[] content) {
+        return new CharsetDetector().setText(content).detect().getName();
     }
 
-    public String detectContentType( URL content )
-    {
-        try
-        {
-            try (InputStream in = content.openStream())
-            {
+    public String detectContentType(URL content) {
+        try {
+            try (InputStream in = content.openStream()) {
                 byte[] contentBytes = new byte[4096];
-                IOUtils.read( in, contentBytes );
-                return detectContentType( contentBytes );
+                IOUtils.read(in, contentBytes);
+                return detectContentType(contentBytes);
             }
         }
-        catch ( Exception e )
-        {
+        catch (Exception e) {
             return UNKNOWN;
         }
     }
-    public String detectContentType( byte[] content )
-    {
+
+    public String detectContentType(byte[] content) {
         // Tika code looks thread safe at first glance.
-        return tika.detect( content );
+        return tika.detect(content);
     }
 
-    public String detectContentType( File file )
-    {
-        try
-        {
+    public String detectContentType(File file) {
+        try {
             // First try cheaply the Java 7 way
-            String contentType = Files.probeContentType( file.toPath() );
+            String contentType = Files.probeContentType(file.toPath());
 
             // Fallback to Apache Tika
-            if ( contentType == null )
-            {
-                contentType = tika.detect( file );
+            if (contentType == null) {
+                contentType = tika.detect(file);
             }
-            
+
             return contentType;
         }
-        catch ( Exception e )
-        {
+        catch (Exception e) {
             return UNKNOWN;
         }
     }

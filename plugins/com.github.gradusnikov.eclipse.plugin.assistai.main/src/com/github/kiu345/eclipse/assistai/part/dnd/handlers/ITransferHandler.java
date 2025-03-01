@@ -5,8 +5,7 @@ import org.eclipse.swt.dnd.Transfer;
 /**
  * Defines a contract for handling DnD data transfer.
  */
-public interface ITransferHandler
-{
+public interface ITransferHandler {
     /**
      * @return The {@link Transfer} type that this handler can handle.
      */
@@ -16,7 +15,7 @@ public interface ITransferHandler
      * Handles the data transfer.
      * 
      * @param data
-     *            The data to handle.
+     *             The data to handle.
      */
-    void handleTransfer( Object data );
+    void handleTransfer(Object data);
 }

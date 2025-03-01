@@ -14,8 +14,7 @@ import jakarta.inject.Singleton;
 
 @Creatable
 @Singleton
-public class TransferHandlerFactory
-{
+public class TransferHandlerFactory {
     @Inject
     private LocalSelectionTransferHandler localSelectionTransferHandler;
     @Inject
@@ -26,51 +25,41 @@ public class TransferHandlerFactory
     private UrlTransferHandler urlTransferHandler;
     @Inject
     private TextTransferHandler textTransferHandler;
-    
-    
-    private  Map<Transfer, ITransferHandler> supportedTransferHandlers;
-    
-    public TransferHandlerFactory()
-    {
+
+    private Map<Transfer, ITransferHandler> supportedTransferHandlers;
+
+    public TransferHandlerFactory() {
     }
-    
+
     @PostConstruct
-    private void initialize()
-    {
+    private void initialize() {
         supportedTransferHandlers = mapSupportedTransferHandlers();
-        
+
     }
-    
-    private Map<Transfer, ITransferHandler> mapSupportedTransferHandlers()
-    {
+
+    private Map<Transfer, ITransferHandler> mapSupportedTransferHandlers() {
         var map = new LinkedHashMap<Transfer, ITransferHandler>();
-        map.put( localSelectionTransferHandler.getTransferType(), localSelectionTransferHandler );
-        map.put( imageTransferHandler.getTransferType(), imageTransferHandler );
-        map.put( fileTransferHandler.getTransferType(), fileTransferHandler );
-        map.put( urlTransferHandler.getTransferType(), urlTransferHandler );
-        map.put( textTransferHandler.getTransferType(), textTransferHandler );
+        map.put(localSelectionTransferHandler.getTransferType(), localSelectionTransferHandler);
+        map.put(imageTransferHandler.getTransferType(), imageTransferHandler);
+        map.put(fileTransferHandler.getTransferType(), fileTransferHandler);
+        map.put(urlTransferHandler.getTransferType(), urlTransferHandler);
+        map.put(textTransferHandler.getTransferType(), textTransferHandler);
         return map;
     }
 
-    public ITransferHandler createTransferHandlerForType( Transfer type )
-    {
-        return Optional.ofNullable(  supportedTransferHandlers.get( type ) ).orElseThrow(() -> new IllegalArgumentException("Not supported for " + type ) );
-    }
-    
-    
-
-    public Transfer[] getSupportedTransfers()
-    {
-        return  supportedTransferHandlers.keySet().toArray( Transfer[]::new );
+    public ITransferHandler createTransferHandlerForType(Transfer type) {
+        return Optional.ofNullable(supportedTransferHandlers.get(type)).orElseThrow(() -> new IllegalArgumentException("Not supported for " + type));
     }
 
-    public Optional<ITransferHandler> getTransferHandler( TransferData currentDataType )
-    {
-        return  supportedTransferHandlers.keySet().stream()
-        .filter( transferType -> transferType.isSupportedType( currentDataType ) )
-        .findFirst()
-        .map( this::createTransferHandlerForType );
+    public Transfer[] getSupportedTransfers() {
+        return supportedTransferHandlers.keySet().toArray(Transfer[]::new);
     }
-    
-    
+
+    public Optional<ITransferHandler> getTransferHandler(TransferData currentDataType) {
+        return supportedTransferHandlers.keySet().stream()
+                .filter(transferType -> transferType.isSupportedType(currentDataType))
+                .findFirst()
+                .map(this::createTransferHandlerForType);
+    }
+
 }

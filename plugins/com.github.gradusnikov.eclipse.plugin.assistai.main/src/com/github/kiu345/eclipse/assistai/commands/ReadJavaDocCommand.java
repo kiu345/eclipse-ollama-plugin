@@ -36,11 +36,10 @@ import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
  * Java elements, handling any potential errors during the process.
  */
 @Creatable
-public class ReadJavaDocCommand
-{
+public class ReadJavaDocCommand {
     @Inject
     private ILog logger;
-    
+
     /**
      * Retrieves the attached JavaDoc documentation for a given class within the available Java projects.
      * It searches all projects for the JavaDoc and if found, it returns the JavaDoc content. If no JavaDoc
@@ -49,15 +48,15 @@ public class ReadJavaDocCommand
      * @param fullyQualifiedClassName The fully qualified name of the class to find the JavaDoc for.
      * @return The JavaDoc string if available; otherwise, a message indicating it is not available.
      */
-    public String getClassAttachedJavadoc( String fullyQualifiedClassName )
-    {
+    public String getClassAttachedJavadoc(String fullyQualifiedClassName) {
         return getAvailableJavaProjects().stream()
-                                          .map( project -> getAttachedJavadoc( fullyQualifiedClassName, project ) )
-                                          .filter( Objects::nonNull )
-                                          .filter( Predicate.not( String::isBlank ) )
-                                          .findAny()
-                                          .orElse( "JavaDoc is not available for " + fullyQualifiedClassName );
+                .map(project -> getAttachedJavadoc(fullyQualifiedClassName, project))
+                .filter(Objects::nonNull)
+                .filter(Predicate.not(String::isBlank))
+                .findAny()
+                .orElse("JavaDoc is not available for " + fullyQualifiedClassName);
     }
+
     /**
      * Retrieves the source code attached to the specified class within the available Java projects.
      * It searches all projects for the source code and if found, returns the source content. If no source code
@@ -65,16 +64,16 @@ public class ReadJavaDocCommand
      *
      * @param fullyQualifiedClassName The fully qualified name of the class for which to find the source code.
      * @return The source code string if available; otherwise, a message indicating it is not available.
-     */    
-    public String getClassAttachedSource( String fullyQualifiedClassName )
-    {
+     */
+    public String getClassAttachedSource(String fullyQualifiedClassName) {
         return getAvailableJavaProjects().stream()
-                                          .map( project -> getAttachedSource( fullyQualifiedClassName, project ) )
-                                          .filter( Objects::nonNull )
-                                          .filter( Predicate.not( String::isBlank ) )
-                                          .findAny()
-                                          .orElse( "Source is not available for " + fullyQualifiedClassName );
+                .map(project -> getAttachedSource(fullyQualifiedClassName, project))
+                .filter(Objects::nonNull)
+                .filter(Predicate.not(String::isBlank))
+                .findAny()
+                .orElse("Source is not available for " + fullyQualifiedClassName);
     }
+
     /**
      * Retrieves a list of all available Java projects in the current workspace.
      * It filters out non-Java projects and only includes projects that are open and have the Java nature.
@@ -82,68 +81,57 @@ public class ReadJavaDocCommand
      * @return A list of {@link IJavaProject} representing the available Java projects.
      * @throws RuntimeException if an error occurs while accessing project information.
      */
-    public List<IJavaProject> getAvailableJavaProjects()
-    {
+    public List<IJavaProject> getAvailableJavaProjects() {
         List<IJavaProject> javaProjects = new ArrayList<>();
 
-        try
-        {
+        try {
             // Get all projects in the workspace
             IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 
             // Filter out the Java projects
-            for ( IProject project : projects )
-            {
-                if ( project.isOpen() && project.hasNature( JavaCore.NATURE_ID ) )
-                {
-                    IJavaProject javaProject = JavaCore.create( project );
-                    javaProjects.add( javaProject );
+            for (IProject project : projects) {
+                if (project.isOpen() && project.hasNature(JavaCore.NATURE_ID)) {
+                    IJavaProject javaProject = JavaCore.create(project);
+                    javaProjects.add(javaProject);
                 }
             }
         }
-        catch ( CoreException e )
-        {
-            throw new RuntimeException( e );
+        catch (CoreException e) {
+            throw new RuntimeException(e);
         }
 
         return javaProjects;
     }
+
     /**
      * Gathers and returns JavaDoc information for a specified class within a given Java project. It retrieves the JavaDoc
      * by looking up the type corresponding to the fully qualified class name and extracting its documentation, as well as
      * the documentation of its children elements.
      *
      * @param fullyQualifiedClassName The fully qualified name of the class for which to retrieve JavaDoc.
-     * @param javaProject The Java project within which to search for the class.
+     * @param javaProject             The Java project within which to search for the class.
      * @return A string containing the JavaDoc for the class and its children, or an empty string if not found.
      */
-    public String getAttachedJavadoc( String fullyQualifiedClassName, IJavaProject javaProject )
-    {
+    public String getAttachedJavadoc(String fullyQualifiedClassName, IJavaProject javaProject) {
         String javaDoc = "";
-        try
-        {
+        try {
             IType type = javaProject.findType(fullyQualifiedClassName);
-            if ( Objects.nonNull( type ) )
-            {
-                javaDoc += getMemberJavaDoc( (IMember) type );
-                
-                for ( IJavaElement child : type.getChildren() )
-                {
-                    javaDoc += getMemberJavaDoc( (IMember) child );
+            if (Objects.nonNull(type)) {
+                javaDoc += getMemberJavaDoc((IMember) type);
+
+                for (IJavaElement child : type.getChildren()) {
+                    javaDoc += getMemberJavaDoc((IMember) child);
                 }
             }
         }
-        catch ( JavaModelException e )
-        {
-          logger.error( e.getMessage(), e );
+        catch (JavaModelException e) {
+            logger.error(e.getMessage(), e);
         }
-        
+
         var converter = FlexmarkHtmlConverter.builder().build();
-        String markdown = converter.convert( javaDoc );
+        String markdown = converter.convert(javaDoc);
         return markdown;
     }
-    
-    
 
     /**
      * Retrieves the JavaDoc documentation for a given member of a Java project.
@@ -154,63 +142,52 @@ public class ReadJavaDocCommand
      * @return A string containing the JavaDoc documentation, or an empty string if none is found.
      * @throws JavaModelException if an error occurs while retrieving the JavaDoc.
      */
-    private String getMemberJavaDoc(  IMember member ) throws JavaModelException
-    {
+    private String getMemberJavaDoc(IMember member) throws JavaModelException {
         String javaDoc = "";
-        String attachedJavaDoc = member.getAttachedJavadoc( null );
-        if ( attachedJavaDoc != null )
-        {
+        String attachedJavaDoc = member.getAttachedJavadoc(null);
+        if (attachedJavaDoc != null) {
             javaDoc += attachedJavaDoc;
         }
-        else
-        {
+        else {
             ISourceRange range = member.getJavadocRange();
-            if ( range != null )
-            {
+            if (range != null) {
                 ICompilationUnit unit = member.getCompilationUnit();
-                if ( unit != null )
-                {
+                if (unit != null) {
                     IBuffer buffer = unit.getBuffer();
-                    javaDoc += buffer.getText( range.getOffset(), range.getLength() ) + "\n";
+                    javaDoc += buffer.getText(range.getOffset(), range.getLength()) + "\n";
                 }
             }
         }
         javaDoc += member.toString() + "\n";
         return javaDoc;
     }
-       
+
     /**
      * Extracts the source code for a specified class from the given Java project's associated resources.
      * If the class is found, the source code is retrieved from the corresponding file. If not found,
      * or if any errors occur during retrieval, a message is returned indicating the source is unavailable.
      *
      * @param fullyQualifiedClassName The fully qualified name of the class whose source code is to be retrieved.
-     * @param javaProject The Java project to which the class belongs.
+     * @param javaProject             The Java project to which the class belongs.
      * @return The source code of the class, or a message indicating that the source is not available.
      */
-    public String getAttachedSource( String fullyQualifiedClassName, IJavaProject javaProject )
-    {
-        try
-        {
+    public String getAttachedSource(String fullyQualifiedClassName, IJavaProject javaProject) {
+        try {
             // Find the type for the fully qualified class name
-            IType type = javaProject.findType( fullyQualifiedClassName );
-            if ( type == null )
-            {
-                return null;      
+            IType type = javaProject.findType(fullyQualifiedClassName);
+            if (type == null) {
+                return null;
             }
             // Get the attached Javadoc
             IResource resource = type.getCorrespondingResource();
-            if ( resource == null )
-            {
+            if (resource == null) {
                 resource = type.getResource();
             }
-            if ( resource == null )
-            {
+            if (resource == null) {
                 resource = type.getUnderlyingResource();
             }
             // Check if the resource is a file
-            if (resource instanceof IFile) 
-            {
+            if (resource instanceof IFile) {
                 IFile file = (IFile) resource;
                 TextFileDocumentProvider provider = new TextFileDocumentProvider();
                 provider.connect(file);
@@ -221,9 +198,8 @@ public class ReadJavaDocCommand
                 return content;
             }
         }
-        catch ( Exception e )
-        {
-            logger.error( e.getMessage(), e );
+        catch (Exception e) {
+            logger.error(e.getMessage(), e);
             return null;
         }
         return null;

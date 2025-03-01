@@ -2,11 +2,10 @@
 <feature
       id="com.github.kiu345.eclipse.assistai"
       label="Assist AI OLL"
-      version="1.0.2.qualifier"
-      provider-name="WojciechGradkowski">
+      version="1.0.4.qualifier">
 
    <description>
-      AssistAI is an Eclipse IDE plugin that integrates ChatGPT functionality.
+      AssistAI is an Eclipse IDE plugin that integrates Ollama functionality.
    </description>
 
    <copyright>
@@ -25,15 +24,10 @@ THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR I
 
    <plugin
          id="com.github.kiu345.eclipse.plugin.assistai.dependencies"
-         download-size="0"
-         install-size="0"
          version="0.0.0"/>
 
    <plugin
          id="com.github.kiu345.eclipse.plugin.assistai.main"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
+         version="0.0.0"/>
 
 </feature>

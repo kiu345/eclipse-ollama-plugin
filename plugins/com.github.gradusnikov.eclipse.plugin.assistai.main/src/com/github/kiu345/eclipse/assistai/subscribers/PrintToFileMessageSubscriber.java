@@ -16,55 +16,48 @@ import org.eclipse.e4.core.di.annotations.Creatable;
 import com.github.kiu345.eclipse.assistai.model.Incoming;
 
 @Creatable
-public class PrintToFileMessageSubscriber implements Flow.Subscriber<Incoming>
-{
+public class PrintToFileMessageSubscriber implements Flow.Subscriber<Incoming> {
     private Flow.Subscription subscription;
-    
+
     @Inject
     private ILog logger;
-    
-    private Path getFile()
-    {
-        Path path = Paths.get( System.getProperty( "user.home" ), "assitai.log" );
+
+    private Path getFile() {
+        Path path = Paths.get(System.getProperty("user.home"), "assitai.log");
         return path;
     }
-    
-    private void write( String str )
-    {
-        try
-        {
-            Files.writeString( getFile(), str, StandardOpenOption.CREATE, StandardOpenOption.APPEND );
+
+    private void write(String str) {
+        try {
+            Files.writeString(getFile(), str, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
         }
-        catch ( IOException e )
-        {
-            logger.error( e.getMessage(), e );
+        catch (IOException e) {
+            logger.error(e.getMessage(), e);
         }
 
     }
+
     @Override
-    public void onSubscribe(Subscription subscription)
-    {
-        logger.info( "Opening a log file: " + getFile() );        
+    public void onSubscribe(Subscription subscription) {
+        logger.info("Opening a log file: " + getFile());
         this.subscription = subscription;
-        write( "\n>--- BEGIN MESSAGE ---\n" );
-        subscription.request(1);
-    }
-    @Override
-    public void onNext(Incoming item)
-    {
-        write( item.payload() );
+        write("\n>--- BEGIN MESSAGE ---\n");
         subscription.request(1);
     }
 
     @Override
-    public void onError(Throwable throwable)
-    {
+    public void onNext(Incoming item) {
+        write(item.payload());
+        subscription.request(1);
     }
 
     @Override
-    public void onComplete()
-    {
-        write( "\n--- END MESSAGE ---\n" );
+    public void onError(Throwable throwable) {
+    }
+
+    @Override
+    public void onComplete() {
+        write("\n--- END MESSAGE ---\n");
         subscription.request(1);
     }
 }

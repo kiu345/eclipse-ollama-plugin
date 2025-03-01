@@ -9,28 +9,25 @@ import org.eclipse.jdt.internal.corext.callhierarchy.CallHierarchy;
 import org.eclipse.jdt.internal.corext.callhierarchy.MethodWrapper;
 
 @Creatable
-public class CallHierarchyHelper
-{
-    public void getCallHierarchy( ICompilationUnit selectedElement )
-    {
-        if ( selectedElement.getElementType() == IJavaElement.METHOD )
-        {
+public class CallHierarchyHelper {
+    @SuppressWarnings("restriction")
+    public void getCallHierarchy(ICompilationUnit selectedElement) {
+        if (selectedElement.getElementType() == IJavaElement.METHOD) {
             IMethod selectedMethod = (IMethod) selectedElement;
             CallHierarchy callHierarchy = CallHierarchy.getDefault();
-            MethodWrapper[] callers = callHierarchy.getCallerRoots(new IMethod[] {selectedMethod});
+            MethodWrapper[] callers = callHierarchy.getCallerRoots(new IMethod[] { selectedMethod });
             traverseCallHierarchy(callers, 0);
-        }        
+        }
     }
-    
-    private void traverseCallHierarchy( MethodWrapper[] callers, int level )
-    {
-        for ( MethodWrapper caller : callers )
-        {
-            IMethod method = (IMethod) caller.getMember();
-            System.out.println( "  ".repeat( level ) + method.getElementName() );
+
+    @SuppressWarnings("restriction")
+    private void traverseCallHierarchy(MethodWrapper[] callers, int level) {
+        for (MethodWrapper caller : callers) {
+//            IMethod method = (IMethod) caller.getMember();
+//            System.out.println("  ".repeat(level) + method.getElementName());
 
             // Recurse into the callers of the current method
-            traverseCallHierarchy( caller.getCalls( new NullProgressMonitor() ), level + 1 );
+            traverseCallHierarchy(caller.getCalls(new NullProgressMonitor()), level + 1);
         }
     }
 }
