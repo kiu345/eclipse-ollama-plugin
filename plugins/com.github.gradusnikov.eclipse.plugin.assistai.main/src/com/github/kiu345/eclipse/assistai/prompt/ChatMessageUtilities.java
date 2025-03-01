@@ -10,35 +10,31 @@ import com.github.kiu345.eclipse.assistai.model.ChatMessage;
 import com.github.kiu345.eclipse.assistai.part.Attachment;
 import com.github.kiu345.eclipse.assistai.tools.ImageUtilities;
 
-public class ChatMessageUtilities
-{
-    public static String toMarkdownContent( ChatMessage message )
-    {
+public class ChatMessageUtilities {
+    public static String toMarkdownContent(ChatMessage message) {
         String content = message.getContent();
 
         List<ImageData> images = message.getAttachments()
                 .stream()
-                .map( Attachment::getImageData )
-                .filter( Objects::nonNull )
-                .collect( Collectors.toList() );
+                .map(Attachment::getImageData)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         List<String> textParts = message.getAttachments()
                 .stream()
-                .map( Attachment::toMarkdownContent )
-                .filter( Objects::nonNull )
-                .collect( Collectors.toList() );
+                .map(Attachment::toMarkdownContent)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
-        if (!images.isEmpty())
-        {
+        if (!images.isEmpty()) {
             content += "\n" + images.stream()
-                    .map( ImageUtilities::toBase64Jpeg )
-                    .map( data -> "![image](data:image/jpeg;base64," + data + ")" )
-                    .collect( Collectors.joining( "\n" ) );
+                    .map(ImageUtilities::toBase64Jpeg)
+                    .map(data -> "![image](data:image/jpeg;base64," + data + ")")
+                    .collect(Collectors.joining("\n"));
         }
 
-        if (!textParts.isEmpty())
-        {
-            content += "\n" + textParts.stream().collect( Collectors.joining( "\n" ) ) + "\n";
+        if (!textParts.isEmpty()) {
+            content += "\n" + textParts.stream().collect(Collectors.joining("\n")) + "\n";
         }
 
         return content;

@@ -15,76 +15,63 @@ import com.github.kiu345.eclipse.assistai.model.FunctionCall;
 import com.github.kiu345.eclipse.assistai.model.Incoming;
 
 @Creatable
-public class FunctionCallSubscriber implements Flow.Subscriber<Incoming>
-{
+public class FunctionCallSubscriber implements Flow.Subscriber<Incoming> {
     @Inject
     private ILog logger;
     @Inject
     private Provider<ExecuteFunctionCallJob> executeFunctionCallJobProvider;
-    
+
     private Subscription subscription;
     private final StringBuffer jsonBuffer;
-    
-    public FunctionCallSubscriber()
-    {
+
+    public FunctionCallSubscriber() {
         jsonBuffer = new StringBuffer();
     }
-    
+
     @Override
-    public void onSubscribe( Subscription subscription )
-    {
+    public void onSubscribe(Subscription subscription) {
         this.subscription = subscription;
-        jsonBuffer.setLength( 0 );
+        jsonBuffer.setLength(0);
         subscription.request(1);
 
     }
 
     @Override
-    public void onNext( Incoming item )
-    {
-        if ( Incoming.Type.FUNCTION_CALL == item.type() )
-        {
-            jsonBuffer.append( item.payload() );
+    public void onNext(Incoming item) {
+        if (Incoming.Type.FUNCTION_CALL == item.type()) {
+            jsonBuffer.append(item.payload());
         }
         subscription.request(1);
     }
 
     @Override
-    public void onError( Throwable throwable )
-    {
-        jsonBuffer.setLength( 0 );
+    public void onError(Throwable throwable) {
+        jsonBuffer.setLength(0);
     }
 
     @Override
-    public void onComplete()
-    {
+    public void onComplete() {
         String json = jsonBuffer.toString();
         json += "}";
 
-        if ( !json.startsWith( "\"function_call\"" ) )
-        {
+        if (!json.startsWith("\"function_call\"")) {
             subscription.request(1);
             return;
         }
-        try
-        {
+        try {
             // 1. append assistant request to call a function to the conversation
             ObjectMapper mapper = new ObjectMapper();
             // -- convert JSON to FuncationCall object
-            var functionCall = mapper.readValue( json.replace( "\"function_call\" : ","" ), FunctionCall.class );
-            
+            var functionCall = mapper.readValue(json.replace("\"function_call\" : ", ""), FunctionCall.class);
+
             ExecuteFunctionCallJob job = executeFunctionCallJobProvider.get();
-            job.setFunctionCall( functionCall );
+            job.setFunctionCall(functionCall);
             job.schedule();
         }
-        catch ( Exception e )
-        {
-            logger.error( e.getMessage(), e );
+        catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
         subscription.request(1);
     }
-
-
-    
 
 }

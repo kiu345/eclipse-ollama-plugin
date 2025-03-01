@@ -17,88 +17,75 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.github.kiu345.eclipse.assistai.Activator;
 
-public class PromptsPreferencePage extends PreferencePage implements IWorkbenchPreferencePage
-{
+public class PromptsPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
     private PromptsPreferencePresenter preferencePresenter;
     private List list;
     private Text textArea;
-    
-    public PromptsPreferencePage()
-    {
+
+    public PromptsPreferencePage() {
         setPreferenceStore(Activator.getDefault().getPreferenceStore());
         setDescription("Prompts");
         preferencePresenter = Activator.getDefault().getPromptsPreferncePresenter();
     }
-    
+
     @Override
-    public void init( IWorkbench workbench )
-    {
+    public void init(IWorkbench workbench) {
     }
 
     @Override
-    protected Control createContents( Composite parent )
-    {
+    protected Control createContents(Composite parent) {
         SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
         sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        list = new List( sashForm, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL );
+        list = new List(sashForm, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL);
 
-        textArea = new Text( sashForm, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP );
-        var textAreaLayoutData = new GridData( GridData.FILL_BOTH );
-        textArea.setLayoutData( textAreaLayoutData );
+        textArea = new Text(sashForm, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
+        var textAreaLayoutData = new GridData(GridData.FILL_BOTH);
+        textArea.setLayoutData(textAreaLayoutData);
 
         // Sets the initial weight ratio
-        sashForm.setWeights(new int[]{15, 85}); 
-        
+        sashForm.setWeights(new int[] { 15, 85 });
+
         initializeListeners();
-        
-        preferencePresenter.registerView( this );
+
+        preferencePresenter.registerView(this);
 
         return sashForm;
     }
 
-    private void initializeListeners()
-    {
-        list.addSelectionListener( new SelectionAdapter()
-        {
+    private void initializeListeners() {
+        list.addSelectionListener(new SelectionAdapter() {
             @Override
-            public void widgetSelected( SelectionEvent e )
-            {
-                Objects.requireNonNull( preferencePresenter );
+            public void widgetSelected(SelectionEvent e) {
+                Objects.requireNonNull(preferencePresenter);
                 int selectedIndex = list.getSelectionIndex();
-                preferencePresenter.setSelectedPrompt( selectedIndex );
+                preferencePresenter.setSelectedPrompt(selectedIndex);
             }
-        } );
+        });
     }
 
-    public void setPrompts( String[] prompts )
-    {
-        list.setItems( prompts );
+    public void setPrompts(String[] prompts) {
+        list.setItems(prompts);
     }
 
-    public void setCurrentPrompt( String selectedItem )
-    {
-        textArea.setText( selectedItem );
+    public void setCurrentPrompt(String selectedItem) {
+        textArea.setText(selectedItem);
     }
-    
+
     @Override
-    protected void performApply() 
-    {
+    protected void performApply() {
         // Save the current prompt text to the preference store
         int selectedIndex = list.getSelectionIndex();
-        if (selectedIndex != -1) 
-        {
+        if (selectedIndex != -1) {
             preferencePresenter.savePrompt(selectedIndex, textArea.getText());
         }
         super.performApply();
     }
-    
+
     @Override
-    protected void performDefaults()
-    {
+    protected void performDefaults() {
         int selectedIndex = list.getSelectionIndex();
-        if (selectedIndex != -1) 
-        {
+        if (selectedIndex != -1) {
             preferencePresenter.resetPrompt(selectedIndex);
         }
         super.performDefaults();

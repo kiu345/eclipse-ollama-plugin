@@ -16,27 +16,24 @@ import org.eclipse.e4.ui.workbench.modeling.EModelService;
  */
 @Creatable
 @Singleton
-public class PartAccessor
-{
+public class PartAccessor {
     @Inject
     private MApplication application;
     @Inject
-    private EModelService modelService; 
-    
+    private EModelService modelService;
+
     /**
      * Finds the ChatGPTViewPart in the application model by its element ID.
      *
      * @return an Optional containing the ChatGPTViewPart if found, otherwise an empty Optional
      */
-    public Optional<ChatGPTViewPart> findMessageView() 
-    {
+    public Optional<ChatViewPart> findMessageView() {
         // Find the MessageView by element ID in the application model
-        return modelService.findElements(application, "assistai.partdescriptor.chatgptview", MPart.class)
-                                           .stream()
-                                           .findFirst()
-                                           .map( mpart -> mpart.getObject() )
-                                           .map( ChatGPTViewPart.class::cast );
+        return modelService.findElements(application, "assistai.partdescriptor.chatview", MPart.class)
+                .stream()
+                .findFirst()
+                .map(mpart -> mpart.getObject())
+                .map(ChatViewPart.class::cast);
     }
 
-    
 }

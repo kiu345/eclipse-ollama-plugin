@@ -1,6 +1,5 @@
 package com.github.kiu345.eclipse.assistai.part.dnd.handlers;
 
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,73 +18,60 @@ import jakarta.inject.Singleton;
 
 @Creatable
 @Singleton
-public class FileTransferHandler implements ITransferHandler
-{
+public class FileTransferHandler implements ITransferHandler {
     private static final FileTransfer TRANSFER = FileTransfer.getInstance();
 
     @Inject
     private AttachmentHelper attachmentHandler;
 
     @Inject
-    private ContentTypeDetector      contentTypeDetector;
+    private ContentTypeDetector contentTypeDetector;
 
     @Inject
-    private ILog             logger;
+    private ILog logger;
 
     @Override
-    public Transfer getTransferType()
-    {
+    public Transfer getTransferType() {
         return TRANSFER;
     }
 
     @Override
-    public void handleTransfer( Object data )
-    {
+    public void handleTransfer(Object data) {
         String[] files = (String[]) data;
 
-        for ( String fullFileName : files )
-        {
-            File file = new File( fullFileName );
+        for (String fullFileName : files) {
+            File file = new File(fullFileName);
 
-            String contentType = contentTypeDetector.detectContentType( file );
-            
-            if ( contentType.startsWith( "image" ) )
-            {
-                handleImageFile( file );
+            String contentType = contentTypeDetector.detectContentType(file);
+
+            if (contentType.startsWith("image")) {
+                handleImageFile(file);
             }
-            else if ( contentType.startsWith( "text" ) )
-            {
-                handleTextFile( file );
+            else if (contentType.startsWith("text")) {
+                handleTextFile(file);
             }
-            else
-            {
-                logger.error( "Unsupported file type: " + contentType );
+            else {
+                logger.error("Unsupported file type: " + contentType);
             }
         }
     }
 
-    private void handleTextFile( File file )
-    {
-        try (InputStream in = new BufferedInputStream( new FileInputStream( file ) ))
-        {
-            attachmentHandler.handleText( file.getName(), in );
+    private void handleTextFile(File file) {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+            attachmentHandler.handleText(file.getName(), in);
         }
-        catch ( IOException e )
-        {
-            logger.error( e.getMessage(), e );
+        catch (IOException e) {
+            logger.error(e.getMessage(), e);
         }
     }
 
-    private void handleImageFile( File file )
-    {
-        try (InputStream in = new BufferedInputStream( new FileInputStream( file ) ))
-        {
-            
-            attachmentHandler.handleImage( file.toURI().toURL() );
+    private void handleImageFile(File file) {
+        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+
+            attachmentHandler.handleImage(file.toURI().toURL());
         }
-        catch ( IOException e )
-        {
-            logger.error( e.getMessage(), e );
+        catch (IOException e) {
+            logger.error(e.getMessage(), e);
         }
     }
 

@@ -18,58 +18,48 @@ import jakarta.inject.Singleton;
 
 @Creatable
 @Singleton
-public class UrlTransferHandler implements ITransferHandler
-{
+public class UrlTransferHandler implements ITransferHandler {
     private static final URLTransfer TRANSFER = URLTransfer.getInstance();
 
     @Inject
     private AttachmentHelper attachmentHandler;
-    
-    @Inject
-    private ContentTypeDetector      contentTypeDetector;
 
     @Inject
-    private ILog             logger;
+    private ContentTypeDetector contentTypeDetector;
+
+    @Inject
+    private ILog logger;
 
     @Override
-    public Transfer getTransferType()
-    {
+    public Transfer getTransferType() {
         return TRANSFER;
     }
 
     @Override
-    public void handleTransfer( Object dataObj )
-    {
+    public void handleTransfer(Object dataObj) {
         String data = (String) dataObj;
-        try
-        {
-            
-            URL url = new URI( data ).toURL();
-            String contentType = contentTypeDetector.detectContentType( url );
+        try {
 
-            if ( contentType.startsWith( "image" ) )
-            {
-                attachmentHandler.handleImage( url );
+            URL url = new URI(data).toURL();
+            String contentType = contentTypeDetector.detectContentType(url);
+
+            if (contentType.startsWith("image")) {
+                attachmentHandler.handleImage(url);
             }
-            else if ( contentType.startsWith( "text" ) )
-            {
-                attachmentHandler.handleText( toFileName( url ), url.openStream() );
+            else if (contentType.startsWith("text")) {
+                attachmentHandler.handleText(toFileName(url), url.openStream());
             }
         }
-        catch ( URISyntaxException | IOException e )
-        {
-            logger.error( e.getMessage(), e );
+        catch (URISyntaxException | IOException e) {
+            logger.error(e.getMessage(), e);
         }
     }
 
-    private String toFileName( URL url )
-    {
-        try
-        {
-            return Paths.get( url.toURI() ).getFileName().toString();
+    private String toFileName(URL url) {
+        try {
+            return Paths.get(url.toURI()).getFileName().toString();
         }
-        catch ( URISyntaxException e )
-        {
+        catch (URISyntaxException e) {
             return "unknown";
         }
     }

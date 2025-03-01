@@ -9,110 +9,93 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.github.kiu345.eclipse.assistai.model.ModelApiDescriptor;
 
-
-public class ModelListPreferencePresenter
-{
+public class ModelListPreferencePresenter {
 
     private final IPreferenceStore preferenceStore;
     private ModelListPreferencePage view;
-    
-    public ModelListPreferencePresenter( IPreferenceStore preferenceStore )
-    {
+
+    public ModelListPreferencePresenter(IPreferenceStore preferenceStore) {
         this.preferenceStore = preferenceStore;
     }
-    
-    public List<ModelApiDescriptor> getModels()
-    {
-        String modelsJson = preferenceStore.getString( PreferenceConstants.ASSISTAI_DEFINED_MODELS );
-        List<ModelApiDescriptor> models =  ModelApiDescriptorUtilities.fromJson( modelsJson );
+
+    public List<ModelApiDescriptor> getModels() {
+        String modelsJson = preferenceStore.getString(PreferenceConstants.ASSISTAI_DEFINED_MODELS);
+        List<ModelApiDescriptor> models = ModelApiDescriptorUtilities.fromJson(modelsJson);
         return models;
     }
-    
-    public Optional<ModelApiDescriptor> getModelAt( int index )
-    {
+
+    public Optional<ModelApiDescriptor> getModelAt(int index) {
         var models = getModels();
-        return index >= 0 && index < models.size() ? Optional.of(models.get( index )) : Optional.empty();
+        return index >= 0 && index < models.size() ? Optional.of(models.get(index)) : Optional.empty();
     }
-    
-    public void addModel()
-    {
+
+    public void addModel() {
         view.clearModelSelection();
         view.clearModelDetails();
-        view.setDetailsEditable( true );
+        view.setDetailsEditable(true);
     }
-    
-    public void removeModel( int selectedIndex )
-    {
+
+    public void removeModel(int selectedIndex) {
         var models = getModels();
-        if ( selectedIndex >= 0 && selectedIndex < models.size() )
-        {
-            models.remove( selectedIndex );
-            save( models );
-            view.showModels( models );
+        if (selectedIndex >= 0 && selectedIndex < models.size()) {
+            models.remove(selectedIndex);
+            save(models);
+            view.showModels(models);
             view.clearModelDetails();
         }
     }
-    
-    public void save( List<ModelApiDescriptor> models )
-    {
-        String json = ModelApiDescriptorUtilities.toJson( models );
-        preferenceStore.setValue( PreferenceConstants.ASSISTAI_DEFINED_MODELS, json );
+
+    public void save(List<ModelApiDescriptor> models) {
+        String json = ModelApiDescriptorUtilities.toJson(models);
+        preferenceStore.setValue(PreferenceConstants.ASSISTAI_DEFINED_MODELS, json);
     }
 
-    public void saveModel( int selectedIndex, ModelApiDescriptor updatedModelStub )    
-    {
-        List<ModelApiDescriptor> storedDescriptors  = getModels();
+    public void saveModel(int selectedIndex, ModelApiDescriptor updatedModelStub) {
+        List<ModelApiDescriptor> storedDescriptors = getModels();
         String uid;
-        Consumer<ModelApiDescriptor> update; 
-        if ( selectedIndex >= 0 && selectedIndex < storedDescriptors.size() )
-        {
-            uid = storedDescriptors.get( selectedIndex ).uid();
-            update = model -> storedDescriptors.set( selectedIndex, model );
+        Consumer<ModelApiDescriptor> update;
+        if (selectedIndex >= 0 && selectedIndex < storedDescriptors.size()) {
+            uid = storedDescriptors.get(selectedIndex).uid();
+            update = model -> storedDescriptors.set(selectedIndex, model);
         }
-        else
-        {
+        else {
             uid = UUID.randomUUID().toString();
-            update = model -> storedDescriptors.add( model );
+            update = model -> storedDescriptors.add(model);
         }
-        ModelApiDescriptor toStore  = new ModelApiDescriptor( 
-                uid, 
-                updatedModelStub.apiType(), 
+        ModelApiDescriptor toStore = new ModelApiDescriptor(
+                uid,
+                updatedModelStub.apiType(),
                 updatedModelStub.apiUrl(),
-                updatedModelStub.apiKey(), 
-                updatedModelStub.modelName(), 
-                updatedModelStub.temperature(), 
+                updatedModelStub.apiKey(),
+                updatedModelStub.modelName(),
+                updatedModelStub.temperature(),
                 updatedModelStub.vision(),
                 updatedModelStub.functionCalling()
-                 );
-        update.accept( toStore );
-        save( storedDescriptors );
-        view.showModels( getModels() );
+        );
+        update.accept(toStore);
+        save(storedDescriptors);
+        view.showModels(getModels());
         view.clearModelDetails();
     }
 
-    public void setSelectedModel( int selectedIndex )
-    {
+    public void setSelectedModel(int selectedIndex) {
         var models = getModels();
-        if ( selectedIndex >= 0 && selectedIndex < models.size() )
-        {
-            view.showModelDetails( models.get( selectedIndex ) );
+        if (selectedIndex >= 0 && selectedIndex < models.size()) {
+            view.showModelDetails(models.get(selectedIndex));
         }
-        else
-        {
+        else {
             view.clearModelDetails();
         }
     }
 
-    public void registerView( ModelListPreferencePage modelListPreferencePage )
-    {
-        view = modelListPreferencePage; 
-        view.showModels( getModels() );
+    public void registerView(ModelListPreferencePage modelListPreferencePage) {
+        view = modelListPreferencePage;
+        view.showModels(getModels());
     }
 
-    public void onPerformDefaults()
-    {
-        preferenceStore.setToDefault( PreferenceConstants.ASSISTAI_DEFINED_MODELS );
-        view.showModels( getModels() );
+    public void onPerformDefaults() {
+        preferenceStore.setToDefault(PreferenceConstants.ASSISTAI_DEFINED_MODELS);
+        view.showModels(getModels());
         view.clearModelDetails();
     }
 }

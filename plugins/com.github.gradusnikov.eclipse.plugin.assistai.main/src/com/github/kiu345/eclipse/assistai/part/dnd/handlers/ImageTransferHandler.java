@@ -5,32 +5,28 @@ import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.ImageData;
 
-import com.github.kiu345.eclipse.assistai.part.ChatGPTPresenter;
+import com.github.kiu345.eclipse.assistai.part.ChatPresenter;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 @Creatable
 @Singleton
-public class ImageTransferHandler implements ITransferHandler
-{
+public class ImageTransferHandler implements ITransferHandler {
     private static final ImageTransfer TRANSFER = ImageTransfer.getInstance();
     @Inject
-    private ChatGPTPresenter presenter;
+    private ChatPresenter presenter;
 
     @Override
-    public Transfer getTransferType()
-    {
+    public Transfer getTransferType() {
         return TRANSFER;
     }
 
     @Override
-    public void handleTransfer( Object data )
-    {
-        if ( data instanceof ImageData )
-        {
+    public void handleTransfer(Object data) {
+        if (data instanceof ImageData) {
             ImageData image = (ImageData) data;
-            presenter.onAttachmentAdded( image );
+            presenter.onAttachmentAdded(image);
         }
     }
 }

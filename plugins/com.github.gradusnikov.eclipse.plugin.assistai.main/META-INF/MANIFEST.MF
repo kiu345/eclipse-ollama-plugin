@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Assist AI
+Bundle-Name: Assist AI Ollama
 Bundle-SymbolicName: com.github.kiu345.eclipse.plugin.assistai.main;singleton:=true
-Bundle-Vendor: Wojciech Gradkowski
-Bundle-Version: 1.0.2.qualifier
+Bundle-Vendor: Stefan Daurer
+Bundle-Version: 1.0.4.qualifier
 Export-Package: com.github.kiu345.eclipse.assistai;uses:="org.osgi.framework,com.github.kiu345.eclipse.assistai.preferences,org.eclipse.ui.plugin",
  com.github.kiu345.eclipse.assistai.commands;uses:="org.eclipse.jdt.core,org.eclipse.core.resources",
  com.github.kiu345.eclipse.assistai.handlers;
@@ -61,6 +61,7 @@ Import-Package: com.fasterxml.jackson.core;version="[2.18,3)",
  java.util.stream,
  org.apache.commons.io;version="[1.4,2)",
  org.apache.commons.lang3;version="[3.17,4)",
+ org.apache.commons.text;version="1.12.0",
  org.apache.tika,
  org.apache.tika.parser.txt,
  org.eclipse.compare,

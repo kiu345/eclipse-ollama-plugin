@@ -13,51 +13,44 @@ import org.jsoup.nodes.Element;
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter;
 
 @Creatable
-public class ReadWebPageCommand
-{
+public class ReadWebPageCommand {
     @Inject
     private ILog logger;
 
-    public String readWebPage( String url )
-    {
+    public String readWebPage(String url) {
         String content = "";
         WebDriver driver = null;
-        try
-        {
+        try {
             ChromeOptions options = new ChromeOptions();
-            options.addArguments( "--headless" ); // Run Chrome in headless mode
-            options.addArguments( "--disable-gpu" );
-            options.addArguments( "--window-size=1920,1200" );
-            options.addArguments( "--ignore-certificate-errors" );
-            options.addArguments( "--silent" );
+            options.addArguments("--headless"); // Run Chrome in headless mode
+            options.addArguments("--disable-gpu");
+            options.addArguments("--window-size=1920,1200");
+            options.addArguments("--ignore-certificate-errors");
+            options.addArguments("--silent");
 
-            driver = new ChromeDriver( options );
-            logger.info( "Fetching web page: " + url );
+            driver = new ChromeDriver(options);
+            logger.info("Fetching web page: " + url);
 
-            driver.get( url );
+            driver.get(url);
             // You may need to wait for the page to load or for JavaScript to
             // execute
 
             String pageSource = driver.getPageSource();
 
-            Document document = Jsoup.parse( pageSource );
+            Document document = Jsoup.parse(pageSource);
 
-            for ( Element body : document.getElementsByTag( "body" ) )
-            {
+            for (Element body : document.getElementsByTag("body")) {
                 String bodyHTML = body.toString();
                 var converter = FlexmarkHtmlConverter.builder().build();
-                content += converter.convert( bodyHTML );
+                content += converter.convert(bodyHTML);
             }
-            logger.info( "Web page content " + url + "\n\n" + content );
+            logger.info("Web page content " + url + "\n\n" + content);
         }
-        catch ( Exception e )
-        {
-            throw new RuntimeException( e );
+        catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        finally
-        {
-            if ( driver != null )
-            {
+        finally {
+            if (driver != null) {
                 driver.quit(); // Close the browser
             }
         }

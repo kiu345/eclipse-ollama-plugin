@@ -10,34 +10,28 @@ import org.eclipse.e4.core.di.annotations.Creatable;
 
 @Creatable
 @Singleton
-public class Conversation
-{
+public class Conversation {
     public List<ChatMessage> conversation = new LinkedList<>();
 
-    public int size()
-    {
+    public int size() {
         return conversation.size();
     }
-    
-    public void clear()
-    {
+
+    public void clear() {
         conversation.clear();
     }
-    
-    public synchronized void add(ChatMessage message)
-    {
+
+    public synchronized void add(ChatMessage message) {
         conversation.add(message);
     }
-    
-    public List<ChatMessage> messages()
-    {
+
+    public List<ChatMessage> messages() {
         return conversation;
     }
 
-    public Optional<ChatMessage> removeLastMessage()
-    {
-        ChatMessage removed = !conversation.isEmpty() ? conversation.remove( conversation.size() - 1 ) : null;
-        return Optional.ofNullable( removed );
-        
+    public Optional<ChatMessage> removeLastMessage() {
+        ChatMessage removed = !conversation.isEmpty() ? conversation.remove(conversation.size() - 1) : null;
+        return Optional.ofNullable(removed);
+
     }
 }
