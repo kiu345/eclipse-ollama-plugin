@@ -1,5 +1,6 @@
 package com.github.kiu345.eclipse.assistai.part;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -41,6 +42,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.PlatformUI;
@@ -808,10 +810,25 @@ public class ChatViewPart {
 
         @Override
         public Object function(Object[] arguments) {
-            if (arguments.length > 0 && arguments[0] instanceof String) {
-                String codeBlock = (String) arguments[0];
-                presenter.onCopyCode(codeBlock);
+            if (arguments == null || arguments.length != 1) {
+                System.err.println("Invalid arguments for saveCode");
+                return null;
             }
+            String codeBlock = (String) arguments[0];
+            
+            // Open a file dialog to select the save location
+            FileDialog fileDialog = new FileDialog(Display.getCurrent().getActiveShell(), SWT.SAVE);
+            fileDialog.setFilterPath(System.getProperty("user.home")); // Set default path to user's home directory
+            String fileName = fileDialog.open();
+            
+            if (fileName != null) {
+                try (FileWriter writer = new FileWriter(fileName)) {
+                    writer.write(codeBlock);
+                } catch (IOException e) {
+                    System.err.println("Error writing to file: " + e.getMessage());
+                }
+            }
+            
             return null;
         }
     }
