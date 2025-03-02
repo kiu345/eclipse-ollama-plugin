@@ -9,9 +9,9 @@ public class PreferenceConstants {
     public static final String ASSISTAI_SELECTED_MODEL = "AssistaAISelectedModel";
     public static final String ASSISTAI_TEMPERATURE = "AssistaAITemperature";
     public static final String ASSISTAI_DEFINED_MODELS = "AssistAIDefinedModels";
-    public static final String ASSISTAI_BASE_URL = "AionUBaseUrl";
-    public static final String ASSISTAI_API_BASE_URL = "AionUApiBaseUrl";
-    public static final String ASSISTAI_GET_MODEL_API_PATH = "AionUModelApiPath";
-    public static final String ASSISTAI_API_KEY = "AionUApiKey";
-    public static final String ASSISTAI_CONVERSATION_ID = "AionUConversationId";
+    public static final String ASSISTAI_BASE_URL = "AssistAIBaseUrl";
+    public static final String ASSISTAI_API_BASE_URL = "AssistAIApiBaseUrl";
+    public static final String ASSISTAI_GET_MODEL_API_PATH = "AssistAIModelApiPath";
+    public static final String ASSISTAI_API_KEY = "AssistAIApiKey";
+    public static final String ASSISTAI_CONVERSATION_ID = "AssistAIConversationId";
 }
