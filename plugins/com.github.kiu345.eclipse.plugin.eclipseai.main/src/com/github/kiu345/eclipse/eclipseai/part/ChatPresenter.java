@@ -168,8 +168,7 @@ public class ChatPresenter {
     }
 
     public void endMessageFromAssistant() {
-        ChatMessage message = chatMessageFactory
-                .createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"true\"></div>");
+        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"true\"></div>");
         conversation.add(message);
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.addInputBlock(message.getId());

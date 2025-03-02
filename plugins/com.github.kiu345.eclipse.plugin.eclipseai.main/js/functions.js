@@ -45,6 +45,13 @@ function setPredefinedPrompt(command) {
 	editor.removeAttribute("autofocus");
 }
 
+function addAttachment(name) {
+	const newItem = document.createElement('li');
+	newItem.className = 'file-item';
+	newItem.textContent  = name;
+	console.log("adding attachment");
+	document.getElementById('attachments').appendChild(newItem);
+}
 
 function handleInput() {
 	const selection = window.getSelection();

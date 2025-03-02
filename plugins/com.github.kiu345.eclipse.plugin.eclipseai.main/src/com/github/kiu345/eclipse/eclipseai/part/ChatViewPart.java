@@ -7,9 +7,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.e4.ui.di.Focus;
@@ -17,6 +19,7 @@ import org.eclipse.e4.ui.di.UISynchronize;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
@@ -36,7 +39,6 @@ import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -45,9 +47,14 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
+import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.UiVisitor;
 import com.github.kiu345.eclipse.eclipseai.part.dnd.DropManager;
 import com.github.kiu345.eclipse.eclipseai.prompt.InputParser;
@@ -91,11 +98,23 @@ public class ChatViewPart {
     private Button withFunctionCalls;
     private Scale withTemperature;
 
+    @SuppressWarnings("unused")
     private ScrolledComposite scrolledComposite;
 
     private Composite imagesContainer;
 
     private List<ModelDescriptor> modelList;
+    
+    private List<FileContentAttachment> fileAttachments = new LinkedList<Attachment.FileContentAttachment>();
+
+    @SuppressWarnings("unused")
+    private static final String CONTEXT_ADDON_HTML = """
+            <div id="context" class="context">
+              <div class="header">Context</div>
+              <ul id="attachments" class="file-list">
+              </ul>
+            </div>
+            """;
 
     public ChatViewPart() {
     }
@@ -133,14 +152,14 @@ public class ChatViewPart {
 
         Composite controls = new Composite(sashForm, SWT.NONE);
 
-        Composite attachmentsPanel = createAttachmentsPanel(controls);
+//        Composite attachmentsPanel = createAttachmentsPanel(controls);
 //        inputArea = createUserInput(controls);
         // create components
-        Button[] buttons = { createClearChatButton(controls), createStopButton(controls), createRefreshButton(controls) };
+        Button[] buttons = { createAttachFileButton(controls), createClearChatButton(controls), createStopButton(controls), createRefreshButton(controls) };
 
         // layout components
         controls.setLayout(new GridLayout(buttons.length, false));
-        attachmentsPanel.setLayoutData(new GridData(SWT.FILL, SWT.PUSH, true, false, buttons.length, 1)); // Full width
+//        attachmentsPanel.setLayoutData(new GridData(SWT.FILL, SWT.PUSH, true, false, buttons.length, 1)); // Full width
 //        inputArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, buttons.length, 1)); // colspan = num of
         // buttons
         for (var button : buttons) {
@@ -263,22 +282,64 @@ public class ChatViewPart {
         return modelList;
     }
 
-    private Composite createAttachmentsPanel(Composite parent) {
-        Composite attachmentsPanel = new Composite(parent, SWT.NONE);
-        attachmentsPanel.setLayout(new GridLayout(1, false)); // One column
+//    private Composite createAttachmentsPanel(Composite parent) {
+//        Composite attachmentsPanel = new Composite(parent, SWT.NONE);
+//        attachmentsPanel.setLayout(new GridLayout(1, false)); // One column
+//
+//        scrolledComposite = new ScrolledComposite(attachmentsPanel, SWT.H_SCROLL);
+//        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//        scrolledComposite.setExpandHorizontal(true);
+//        scrolledComposite.setExpandVertical(true);
+//
+//        imagesContainer = new Composite(scrolledComposite, SWT.NONE);
+//        imagesContainer.setLayout(new RowLayout(SWT.HORIZONTAL));
+//
+//        scrolledComposite.setContent(imagesContainer);
+//        scrolledComposite.setMinSize(imagesContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+//
+//        return attachmentsPanel;
+//    }
+//
+    private Button createAttachFileButton(Composite parent) {
+        Button button = new Button(parent, SWT.PUSH);
+        button.setText("Attach");
+        try {
+            Image clearIcon = PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ISharedImages.IMG_OBJ_ADD);
+            button.setImage(clearIcon);
+        }
+        catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        button.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                try {
+                    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+                    if (window != null) {
+                        IEditorPart editorPart = window.getActivePage().getActiveEditor();
+                        if (editorPart instanceof ITextEditor) {
+                            ITextEditor textEditor = (ITextEditor) editorPart;
+                            FileEditorInput fileInput = (FileEditorInput) textEditor.getEditorInput();
+                            IFile file = fileInput.getFile();
+                            IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
+                            
+                            FileContentAttachment fca = new FileContentAttachment(file.getProjectRelativePath().toPortableString(), 0, document.getNumberOfLines(), document.get());
+                            
+                            if (!fileAttachments.contains(fca)) {
+                                fileAttachments.add(fca);
+                                logger.info(file.getName());
+                                browser.execute("addAttachment('" + file.getProjectRelativePath().toPortableString() + "');");
+                            }
+                        }
+                    }
 
-        scrolledComposite = new ScrolledComposite(attachmentsPanel, SWT.H_SCROLL);
-        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-        scrolledComposite.setExpandHorizontal(true);
-        scrolledComposite.setExpandVertical(true);
-
-        imagesContainer = new Composite(scrolledComposite, SWT.NONE);
-        imagesContainer.setLayout(new RowLayout(SWT.HORIZONTAL));
-
-        scrolledComposite.setContent(imagesContainer);
-        scrolledComposite.setMinSize(imagesContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-
-        return attachmentsPanel;
+                }
+                catch (Exception ex) {
+                    logger.error(ex.getMessage(), ex);
+                }
+            }
+        });
+        return button;
     }
 
     private Button createClearChatButton(Composite parent) {
@@ -294,6 +355,7 @@ public class ChatViewPart {
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                fileAttachments.clear();
                 presenter.onClear();
             }
         });
@@ -332,19 +394,6 @@ public class ChatViewPart {
         });
         return button;
     }
-
-//    private Text createUserInput(Composite parent) {
-//        Text inputArea = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-//        inputArea.addTraverseListener(new TraverseListener() {
-//            public void keyTraversed(TraverseEvent e) {
-//                if (e.detail == SWT.TRAVERSE_RETURN && (e.stateMask & SWT.MODIFIER_MASK) == 0) {
-//                    presenter.onSendUserMessage(inputArea.getText());
-//                }
-//            }
-//        });
-//        createCustomMenu(inputArea);
-//        return inputArea;
-//    }
 
     private void refreshArea() {
         logger.info("Refreshing stuff");
@@ -442,13 +491,12 @@ public class ChatViewPart {
                   <body>
                     <div class="theme-vs-min">
                       <div id="content">
-                        <div class="chat-bubble" id="suggestions"></div>
-                        <div class="chat-bubble me current" contenteditable="true" autofocus placeholder="Ask anything, '/' for slash commands"></div>
-                        <div class="context" id="context">
+                        <div id="suggestions" class="chat-bubble"></div>
+                        <div id="inputarea" class="chat-bubble me current" contenteditable="true" autofocus placeholder="Ask anything, '/' for slash commands"></div>
+                        <div id="context" class="context">
                           <div class="header">Context</div>
-                          <!-- <ul class="file-list">
-                            <li class="file-item">file1.txt<a href="#" class="remove-cross">&times;</a></li>
-                          </ul> -->
+                          <ul id="attachments" class="file-list">
+                          </ul>
                         </div>
                       </div>
                     </div>
@@ -561,7 +609,7 @@ public class ChatViewPart {
             browser.execute(
                     "document.getElementById(\"content\").innerHTML += '"
                             + "<div class=\"chat-bubble me current\" contenteditable=\"true\" autofocus placeholder=\"Ask a follow-up\"></div>"
-                            + "<div class=\"context\" id=\"context\"><div class=\"header\">Context</div></div>"
+                            + "<div id=\"context\" class=\"context\"><div class=\"header\">Context</div><ul id=\"attachments\" class=\"file-list\"></ul></div>"
                             + "';"
             );
             // Scroll down
@@ -593,7 +641,6 @@ public class ChatViewPart {
     }
 
     public void appendMessage(String messageId, String role) {
-        logger.info("Adding message");
         String cssClass = "user".equals(role) ? "chat-bubble me" : "chat-bubble you";
         uiSync.asyncExec(() -> {
             browser.execute("""
@@ -649,6 +696,7 @@ public class ChatViewPart {
     }
 
     public void setAttachments(List<Attachment> attachments) {
+        /*
         uiSync.asyncExec(() -> {
             // Dispose of existing children to avoid memory leaks and remove old
             // images
@@ -676,8 +724,10 @@ public class ChatViewPart {
             // Refresh the layout
             updateLayout(imagesContainer);
         });
+        */
     }
 
+    @SuppressWarnings("unused")
     private class AttachmentVisitor implements UiVisitor {
         private Label imageLabel;
 
@@ -811,20 +861,21 @@ public class ChatViewPart {
                 return null;
             }
             String codeBlock = (String) arguments[0];
-            
+
             // Open a file dialog to select the save location
             FileDialog fileDialog = new FileDialog(Display.getCurrent().getActiveShell(), SWT.SAVE);
             fileDialog.setFilterPath(System.getProperty("user.home")); // Set default path to user's home directory
             String fileName = fileDialog.open();
-            
+
             if (fileName != null) {
                 try (FileWriter writer = new FileWriter(fileName)) {
                     writer.write(codeBlock);
-                } catch (IOException e) {
+                }
+                catch (IOException e) {
                     System.err.println("Error writing to file: " + e.getMessage());
                 }
             }
-            
+
             return null;
         }
     }
@@ -841,6 +892,11 @@ public class ChatViewPart {
 
             if (arguments.length > 0 && arguments[0] instanceof String) {
                 userPrompt = (String) arguments[0];
+                if (fileAttachments.size() != 0) {
+                    for (FileContentAttachment fca: fileAttachments) {
+                        userPrompt = userPrompt +"\n\n"+fca.toChatMessageContent();
+                    }
+                }
 
                 if (arguments.length > 1 && arguments[1] instanceof Boolean)
                     isPreDefinedPormpt = Boolean.valueOf(arguments[1].toString());
@@ -851,6 +907,7 @@ public class ChatViewPart {
                 else {
                     presenter.onSendUserMessage(userPrompt);
                 }
+                fileAttachments.clear();
             }
 
             return null;

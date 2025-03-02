@@ -1,6 +1,7 @@
 package com.github.kiu345.eclipse.eclipseai.part;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.ImageData;
 
@@ -168,6 +169,20 @@ public interface Attachment {
             else {
                 return path[path.length - 1];
             }
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (obj instanceof FileContentAttachment fi) {
+                return new EqualsBuilder()
+                        .append(filePath, fi.filePath)
+                        .append(selectedContent, fi.selectedContent)
+                        .isEquals();
+            }
+            return super.equals(obj);
         }
     }
 
