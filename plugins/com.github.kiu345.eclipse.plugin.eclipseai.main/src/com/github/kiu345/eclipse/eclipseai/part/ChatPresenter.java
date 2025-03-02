@@ -28,8 +28,8 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
 import com.github.kiu345.eclipse.eclipseai.Activator;
-import com.github.kiu345.eclipse.eclipseai.handlers.AssistAIHandlerInvoker;
-import com.github.kiu345.eclipse.eclipseai.jobs.AssistAIJobConstants;
+import com.github.kiu345.eclipse.eclipseai.handlers.EclipseAIHandlerInvoker;
+import com.github.kiu345.eclipse.eclipseai.jobs.EclipseAIJobConstants;
 import com.github.kiu345.eclipse.eclipseai.jobs.SendConversationJob;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
@@ -103,7 +103,7 @@ public class ChatPresenter {
     }
 
     public void onSendPredefinedMessage(String text) {
-        AssistAIHandlerInvoker.Invoke(text);
+        EclipseAIHandlerInvoker.Invoke(text);
     }
 
     public void onSendUserMessage(String text) {
@@ -178,11 +178,11 @@ public class ChatPresenter {
     }
 
     /**
-     * Cancels all running ChatGPT jobs
+     * Cancels all running AI query jobs
      */
     public void onStop() {
         var jobs = jobManager.find(null);
-        Arrays.stream(jobs).filter(job -> job.getName().startsWith(AssistAIJobConstants.JOB_PREFIX))
+        Arrays.stream(jobs).filter(job -> job.getName().startsWith(EclipseAIJobConstants.JOB_PREFIX))
                 .forEach(Job::cancel);
 
         partAccessor.findMessageView().ifPresent(messageView -> {

@@ -30,7 +30,7 @@ import com.github.kiu345.eclipse.eclipseai.prompt.ChatMessageFactory;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
 
 @SuppressWarnings("restriction")
-public class AssistAIGenerateGitCommentHandler {
+public class EclipseAIGenerateGitCommentHandler {
     @Inject
     private ILog logger;
     @Inject

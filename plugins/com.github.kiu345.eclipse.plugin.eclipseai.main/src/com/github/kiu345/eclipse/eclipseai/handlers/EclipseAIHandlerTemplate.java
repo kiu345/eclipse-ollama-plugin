@@ -22,7 +22,7 @@ import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-public class AssistAIHandlerTemplate {
+public class EclipseAIHandlerTemplate {
     @Inject
     protected ChatMessageFactory chatMessageFactory;
     @Inject
@@ -32,7 +32,7 @@ public class AssistAIHandlerTemplate {
 
     protected final Prompts type;
 
-    public AssistAIHandlerTemplate(Prompts type) {
+    public EclipseAIHandlerTemplate(Prompts type) {
         this.type = type;
     }
 

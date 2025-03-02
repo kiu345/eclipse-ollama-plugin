@@ -17,7 +17,7 @@ import jakarta.inject.Singleton;
 @Creatable
 @Singleton
 public class PromptLoader {
-    private final String BASE_URL = "platform:/plugin/com.github.kiu345.eclipse.plugin.assistai.main/prompts/";
+    private final String BASE_URL = "platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/prompts/";
 
     private String baseURL = BASE_URL;
 

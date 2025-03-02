@@ -38,7 +38,7 @@ public class ExecuteFunctionCallJob extends Job {
     private FunctionCall functionCall;
 
     public ExecuteFunctionCallJob() {
-        super(AssistAIJobConstants.JOB_PREFIX + " execute function call");
+        super(EclipseAIJobConstants.JOB_PREFIX + " execute function call");
 
     }
 

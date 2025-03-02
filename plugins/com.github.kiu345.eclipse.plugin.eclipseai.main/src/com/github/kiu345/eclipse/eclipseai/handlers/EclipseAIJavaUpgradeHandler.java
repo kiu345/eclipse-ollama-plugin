@@ -18,7 +18,7 @@ import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
-public class AssistAIJavaUpgradeHandler {
+public class EclipseAIJavaUpgradeHandler {
     @Inject
     private ILog logger;
     @Inject
