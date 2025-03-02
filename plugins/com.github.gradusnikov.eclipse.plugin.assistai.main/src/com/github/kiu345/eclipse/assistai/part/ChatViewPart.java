@@ -236,17 +236,6 @@ public class ChatViewPart {
         return control;
     }
 
-//    private IPropertyChangeListener apiKeyListener = e -> {
-//        if( PreferenceConstants.AION_BASE_URL.equals( e.getProperty() ) ||
-//        		PreferenceConstants.AION_GET_MODEL_API_PATH.equals( e.getProperty() ) ||
-//        		PreferenceConstants.AION_API_BASE_URL.equals( e.getProperty() ) ||
-//        		PreferenceConstants.AION_API_KEY.equals( e.getProperty() ) 
-//        		)
-//        {
-//            makeComboList(null);        	
-//        }
-//    };
-
     public void makeComboList() {
         modelList = getModelList();
 
