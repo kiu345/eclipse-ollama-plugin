@@ -87,15 +87,23 @@ function handleKeyDown(e) {
 		}
 	}
 	else {
-		switch (e.key) {
-			case 'Enter':
-				eclipseSendPrompt(editor.innerText, checkPredefinedPrompt(editor.innerText));
-				editor.setAttribute('contenteditable', 'false');
-				editor.parentElement.removeChild(document.getElementById('context'))
-				editor.removeEventListener('keydown', this);
-				editor.classList.remove("current");
-				editor.removeAttribute("autofocus");
-				break;
+		if (e.shiftKey) {
+			
+		}
+		else if (e.altKey) {
+			
+		}
+		else {
+			switch (e.key) {
+				case 'Enter':
+					eclipseSendPrompt(editor.innerText, checkPredefinedPrompt(editor.innerText));
+					editor.setAttribute('contenteditable', 'false');
+					editor.parentElement.removeChild(document.getElementById('context'))
+					editor.removeEventListener('keydown', this);
+					editor.classList.remove("current");
+					editor.removeAttribute("autofocus");
+					break;
+			}
 		}
 	}
 }
