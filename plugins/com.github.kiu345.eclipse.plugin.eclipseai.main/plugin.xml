@@ -15,21 +15,15 @@
       
       <page
             class="com.github.kiu345.eclipse.eclipseai.preferences.ModelPreferencePage"
-            id="com.github.kiu345.eclipse.eclipseai.preferences.OpenAIPreferencePage"
+            id="com.github.kiu345.eclipse.eclipseai.preferences.ModelPreferencePage"
             name="EclipseAI">
       </page>
         <page
             id="com.github.kiu345.eclipse.eclipseai.preferences.PromptsPreferencePage"
             name="Prompts"
-            category="com.github.kiu345.eclipse.eclipseai.preferences.OpenAIPreferencePage"
+            category="com.github.kiu345.eclipse.eclipseai.preferences.ModelPreferencePage"
             class="com.github.kiu345.eclipse.eclipseai.preferences.PromptsPreferencePage">
         </page>      
-        <page
-            id="com.github.kiu345.eclipse.eclipseai.preferences.ModelListPreferencePage"
-            name="Models"
-            category="com.github.kiu345.eclipse.eclipseai.preferences.OpenAIPreferencePage"
-            class="com.github.kiu345.eclipse.eclipseai.preferences.ModelListPreferencePage">
-        </page>
    </extension>
    <extension
          point="org.eclipse.core.runtime.preferences">

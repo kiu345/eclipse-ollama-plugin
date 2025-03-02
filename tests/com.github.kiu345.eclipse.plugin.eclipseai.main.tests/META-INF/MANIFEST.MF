@@ -8,9 +8,9 @@ Fragment-Host: com.github.kiu345.eclipse.plugin.eclipseai.main
 Require-Bundle: junit-jupiter-api,
  org.eclipse.jdt.core,
  org.eclipse.jdt.launching,
- com.github.kiu345.eclipse.plugin.assistai.dependencies
+ com.github.kiu345.eclipse.plugin.eclipseai.dependencies
 Automatic-Module-Name: com.github.kiu345.eclipse.plugin.eclipseai.main.tests
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Import-Package: com.github.kiu345.eclipse.eclipseai,
  com.github.kiu345.eclipse.eclipseai.commands,
  org.eclipse.core.runtime,

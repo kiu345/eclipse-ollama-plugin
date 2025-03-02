@@ -466,7 +466,7 @@ public class ChatViewPart {
     }
 
     /**
-     * Loads the CSS files for the ChatGPTViewPart component.
+     * Loads the CSS files for the HTML component.
      *
      * @return A concatenated string containing the content of the loaded CSS files.
      */
@@ -476,7 +476,7 @@ public class ChatViewPart {
         String[] cssFiles = { "textview.css", "hjthemes.css" };
         for (String file : cssFiles) {
             try (InputStream in = FileLocator
-                    .toFileURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.assistai.main/css/" + file).toURL())
+                    .toFileURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/css/" + file).toURL())
                     .openStream()) {
                 css.append(new String(in.readAllBytes(), StandardCharsets.UTF_8));
                 css.append("\n");
@@ -489,7 +489,7 @@ public class ChatViewPart {
     }
 
     /**
-     * Loads the JavaScript files for the ChatGPTViewPart component.
+     * Loads the JavaScript files for the HTML component.
      *
      * @return A concatenated string containing the content of the loaded JavaScript
      *         files.
@@ -499,7 +499,7 @@ public class ChatViewPart {
         StringBuilder js = new StringBuilder();
         for (String file : jsFiles) {
             try (InputStream in = FileLocator
-                    .toFileURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.assistai.main/js/" + file).toURL())
+                    .toFileURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/js/" + file).toURL())
                     .openStream()) {
                 js.append(new String(in.readAllBytes(), StandardCharsets.UTF_8));
                 js.append("\n");
@@ -694,7 +694,7 @@ public class ChatViewPart {
                         .map(id -> ImageDescriptor.createFromImageDataProvider(zoom -> id))
                         .orElse(
                                 ImageDescriptor
-                                        .createFromURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.assistai.main/icons/folder.png").toURL())
+                                        .createFromURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/icons/folder.png").toURL())
                         );
             }
             catch (MalformedURLException e) {

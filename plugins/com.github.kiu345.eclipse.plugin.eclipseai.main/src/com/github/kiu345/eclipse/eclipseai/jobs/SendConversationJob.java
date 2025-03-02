@@ -27,7 +27,7 @@ public class SendConversationJob extends Job
     private Conversation conversation;
 
     public SendConversationJob() {
-        super(AssistAIJobConstants.JOB_PREFIX + " ask ChatGPT for help");
+        super(EclipseAIJobConstants.JOB_PREFIX + " ask AI for help");
     }
 
     @Override

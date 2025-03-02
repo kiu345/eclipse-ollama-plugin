@@ -3,7 +3,6 @@ package com.github.kiu345.eclipse.eclipseai;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
-import com.github.kiu345.eclipse.eclipseai.preferences.ModelListPreferencePresenter;
 import com.github.kiu345.eclipse.eclipseai.preferences.PromptsPreferencePresenter;
 
 public class Activator extends AbstractUIPlugin {
@@ -29,10 +28,5 @@ public class Activator extends AbstractUIPlugin {
     public PromptsPreferencePresenter getPromptsPreferncePresenter() {
         PromptsPreferencePresenter presenter = new PromptsPreferencePresenter(getDefault().getPreferenceStore());
         return presenter;
-    }
-
-    public ModelListPreferencePresenter getModelsPreferencePresenter() {
-        ModelListPreferencePresenter presneter = new ModelListPreferencePresenter(getDefault().getPreferenceStore());
-        return presneter;
     }
 }

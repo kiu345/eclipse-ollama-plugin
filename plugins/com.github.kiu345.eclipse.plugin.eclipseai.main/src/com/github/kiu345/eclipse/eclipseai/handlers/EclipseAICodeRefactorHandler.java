@@ -2,8 +2,8 @@ package com.github.kiu345.eclipse.eclipseai.handlers;
 
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
 
-public class AssistAICodeRefactorHandler extends AssistAIHandlerTemplate {
-    public AssistAICodeRefactorHandler() {
+public class EclipseAICodeRefactorHandler extends EclipseAIHandlerTemplate {
+    public EclipseAICodeRefactorHandler() {
         super(Prompts.REFACTOR);
     }
 }

@@ -41,17 +41,17 @@ public class ModelPreferencePage extends FieldEditorPreferencePage implements IW
     @Override
     public void createFieldEditors() {
 
-        var preferenceStore = getPreferenceStore();
+//        var preferenceStore = getPreferenceStore();
 
-        var modelsJson = preferenceStore.getString(PreferenceConstants.ECLIPSEAI_DEFINED_MODELS);
-        var models = ModelApiDescriptorUtilities.fromJson(modelsJson);
+//        var modelsJson = preferenceStore.getString(PreferenceConstants.ECLIPSEAI_DEFINED_MODELS);
+//        var models = ModelApiDescriptorUtilities.fromJson(modelsJson);
 
-        String[][] entries = new String[models.size()][2];
-        for (int i = 0; i < models.size(); i++) {
-            var model = models.get(i);
-            entries[i][0] = String.format("%s - %s", model.apiUrl(), model.modelName());
-            entries[i][1] = model.uid();
-        }
+//        String[][] entries = new String[models.size()][2];
+//        for (int i = 0; i < models.size(); i++) {
+//            var model = models.get(i);
+//            entries[i][0] = String.format("%s - %s", model.apiUrl(), model.modelName());
+//            entries[i][1] = model.uid();
+//        }
 
         Arrays.stream(getFieldEditorParent().getChildren()).forEach(Control::dispose);
 

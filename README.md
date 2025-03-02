@@ -1,6 +1,6 @@
-# AssistAI - Ollama fork
+# EcklipseAI - a AssistAI fork
 
-This fork is focused to use the AssistAI with Ollama, because the original version seems to be using a unsupported API.
+This fork is focused to use the AssistAI with Ollama, because the original version seems to be using a unsupported API and the project is dead.
 
 <p align="center"><img src="src/website/logo_110_80.png"></p>
 
