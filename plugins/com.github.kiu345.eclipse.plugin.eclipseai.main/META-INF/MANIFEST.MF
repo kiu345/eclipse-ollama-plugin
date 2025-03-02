@@ -1,38 +1,38 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Assist AI Ollama
-Bundle-SymbolicName: com.github.kiu345.eclipse.plugin.assistai.main;singleton:=true
+Bundle-Name: EclipseAI
+Bundle-SymbolicName: com.github.kiu345.eclipse.plugin.eclipseai.main;singleton:=true
 Bundle-Vendor: Stefan Daurer
 Bundle-Version: 1.0.4.qualifier
-Export-Package: com.github.kiu345.eclipse.assistai;uses:="org.osgi.framework,com.github.kiu345.eclipse.assistai.preferences,org.eclipse.ui.plugin",
- com.github.kiu345.eclipse.assistai.commands;uses:="org.eclipse.jdt.core,org.eclipse.core.resources",
- com.github.kiu345.eclipse.assistai.handlers;
+Export-Package: com.github.kiu345.eclipse.eclipseai;uses:="org.osgi.framework,com.github.kiu345.eclipse.eclipseai.preferences,org.eclipse.ui.plugin",
+ com.github.kiu345.eclipse.eclipseai.commands;uses:="org.eclipse.jdt.core,org.eclipse.core.resources",
+ com.github.kiu345.eclipse.eclipseai.handlers;
   uses:="org.eclipse.jdt.core,
    org.eclipse.swt.widgets,
-   com.github.kiu345.eclipse.assistai.part,
-   com.github.kiu345.eclipse.assistai.prompt",
- com.github.kiu345.eclipse.assistai.jobs;uses:="org.eclipse.core.runtime.jobs,org.eclipse.core.runtime,com.github.kiu345.eclipse.assistai.model",
- com.github.kiu345.eclipse.assistai.model,
- com.github.kiu345.eclipse.assistai.part;
+   com.github.kiu345.eclipse.eclipseai.part,
+   com.github.kiu345.eclipse.eclipseai.prompt",
+ com.github.kiu345.eclipse.eclipseai.jobs;uses:="org.eclipse.core.runtime.jobs,org.eclipse.core.runtime,com.github.kiu345.eclipse.eclipseai.model",
+ com.github.kiu345.eclipse.eclipseai.model,
+ com.github.kiu345.eclipse.eclipseai.part;
   uses:="org.eclipse.swt.graphics,
-   com.github.kiu345.eclipse.assistai.model,
+   com.github.kiu345.eclipse.eclipseai.model,
    org.eclipse.swt.widgets,
-   com.github.kiu345.eclipse.assistai.prompt",
- com.github.kiu345.eclipse.assistai.part.dnd;uses:="org.eclipse.swt.widgets",
- com.github.kiu345.eclipse.assistai.part.dnd.handlers;uses:="org.eclipse.swt.dnd",
- com.github.kiu345.eclipse.assistai.preferences;
+   com.github.kiu345.eclipse.eclipseai.prompt",
+ com.github.kiu345.eclipse.eclipseai.part.dnd;uses:="org.eclipse.swt.widgets",
+ com.github.kiu345.eclipse.eclipseai.part.dnd.handlers;uses:="org.eclipse.swt.dnd",
+ com.github.kiu345.eclipse.eclipseai.preferences;
   uses:="org.eclipse.ui,
-   com.github.kiu345.eclipse.assistai.model,
+   com.github.kiu345.eclipse.eclipseai.model,
    org.eclipse.jface.preference,
    org.eclipse.swt.widgets,
    org.eclipse.core.runtime.preferences",
- com.github.kiu345.eclipse.assistai.prompt;uses:="com.github.kiu345.eclipse.assistai.model,com.github.kiu345.eclipse.assistai.handlers",
- com.github.kiu345.eclipse.assistai.services;uses:="com.github.kiu345.eclipse.assistai.model,com.fasterxml.jackson.databind",
- com.github.kiu345.eclipse.assistai.subscribers;uses:="com.github.kiu345.eclipse.assistai.services,com.github.kiu345.eclipse.assistai.model,com.github.kiu345.eclipse.assistai.part",
- com.github.kiu345.eclipse.assistai.tools;uses:="org.eclipse.swt.graphics"
-Bundle-Activator: com.github.kiu345.eclipse.assistai.Activator
+ com.github.kiu345.eclipse.eclipseai.prompt;uses:="com.github.kiu345.eclipse.eclipseai.model,com.github.kiu345.eclipse.eclipseai.handlers",
+ com.github.kiu345.eclipse.eclipseai.services;uses:="com.github.kiu345.eclipse.eclipseai.model,com.fasterxml.jackson.databind",
+ com.github.kiu345.eclipse.eclipseai.subscribers;uses:="com.github.kiu345.eclipse.eclipseai.services,com.github.kiu345.eclipse.eclipseai.model,com.github.kiu345.eclipse.eclipseai.part",
+ com.github.kiu345.eclipse.eclipseai.tools;uses:="org.eclipse.swt.graphics"
+Bundle-Activator: com.github.kiu345.eclipse.eclipseai.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-21
-Automatic-Module-Name: assistai.main
+Automatic-Module-Name: eclipseai.main
 Bundle-Classpath: .
 Bundle-ActivationPolicy: lazy
 Import-Package: com.fasterxml.jackson.core;version="[2.18,3)",
