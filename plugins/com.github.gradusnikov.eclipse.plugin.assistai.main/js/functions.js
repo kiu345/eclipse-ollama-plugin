@@ -91,6 +91,7 @@ function handleKeyDown(e) {
 			case 'Enter':
 				eclipseSendPrompt(editor.innerText, checkPredefinedPrompt(editor.innerText));
 				editor.setAttribute('contenteditable', 'false');
+				editor.parentElement.removeChild(document.getElementById('context'))
 				editor.removeEventListener('keydown', this);
 				editor.classList.remove("current");
 				editor.removeAttribute("autofocus");

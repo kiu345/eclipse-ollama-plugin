@@ -455,6 +455,12 @@ public class ChatViewPart {
                       <div id="content">
                         <div class="chat-bubble" id="suggestions"></div>
                         <div class="chat-bubble me current" contenteditable="true" autofocus placeholder="Ask anything, '/' for slash commands"></div>
+                        <div class="context" id="context">
+                          <div class="header">Context</div>
+                          <!-- <ul class="file-list">
+                            <li class="file-item">file1.txt<a href="#" class="remove-cross">&times;</a></li>
+                          </ul> -->
+                        </div>
                       </div>
                     </div>
                   </body>
@@ -565,8 +571,9 @@ public class ChatViewPart {
             // inject and highlight html message
             browser.execute(
                     "document.getElementById(\"content\").innerHTML += '"
-                            + "<div class=\"chat-bubble me current\" contenteditable=\"true\" autofocus "
-                            + "placeholder=\"Ask a follow-up\"></div>" + "';"
+                            + "<div class=\"chat-bubble me current\" contenteditable=\"true\" autofocus placeholder=\"Ask a follow-up\"></div>"
+                            + "<div class=\"context\" id=\"context\"><div class=\"header\">Context</div></div>"
+                            + "';"
             );
             // Scroll down
             browser.execute("addKeyCapture();");

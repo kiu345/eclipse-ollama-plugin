@@ -14,6 +14,46 @@ body {
 	font-size: 10pt;
 }
 
+.context {
+	flex-direction: column;
+	background-color: #c0c0c0;
+	font-family: 'Roboto', sans-serif;
+	margin-top: 0.0rem;
+	margin-bottom: 1.0rem;
+	padding: 3pt; color : #333333;
+	line-height: 150%;
+	font-size: 8pt;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-top-left-radius: 0px;
+	border-top-right-radius: 0px;
+	color: #333333;
+}
+.context .header {
+	font-weight: bold;
+}
+.file-list {
+	display: flex;
+	list-style: none;
+	align-items: center;
+	margin: 0px;
+}
+
+.file-item {
+	margin-right: 20px;
+}
+
+.remove-cross {
+	text-decoration: none;
+	color: #888;
+	margin-left: 5px;
+	cursor: pointer;
+}
+
+.remove-cross:hover {
+	color: #000;
+}
+
 summary {
 	font-weight: bold;
 	color: #30e582;
