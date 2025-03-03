@@ -100,6 +100,9 @@ function handleKeyDown(e) {
 		else if (e.altKey) {
 			
 		}
+		else if (e.ctrlKey) {
+			
+		}
 		else {
 			switch (e.key) {
 				case 'Enter':
