@@ -28,7 +28,7 @@
 	<classpathentry exported="true" kind="lib" path="flexmark/flexmark-util-options-0.64.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="flexmark/flexmark-util-sequence-0.64.8.jar"/>
 	<classpathentry exported="true" kind="lib" path="flexmark/flexmark-util-visitor-0.64.8.jar"/>
-	<classpathentry exported="true" kind="lib" path="flexmark/jsoup-1.18.3.jar"/>
+	<classpathentry exported="true" kind="lib" path="jsoup/jsoup-1.18.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="selenium/auto-service-annotations-1.1.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="selenium/byte-buddy-1.14.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="selenium/checker-qual-3.33.0.jar"/>
