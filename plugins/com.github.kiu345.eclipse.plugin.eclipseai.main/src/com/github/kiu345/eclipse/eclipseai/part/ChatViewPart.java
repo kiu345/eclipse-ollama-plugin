@@ -543,7 +543,7 @@ public class ChatViewPart {
      *         files.
      */
     private String loadJavaScripts() {
-        String[] jsFiles = { "functions.js", "highlight.min.js" };
+        String[] jsFiles = { "functions.js", "highlight.min.js","init.js" };
         StringBuilder js = new StringBuilder();
         for (String file : jsFiles) {
             try (InputStream in = FileLocator
@@ -568,7 +568,8 @@ public class ChatViewPart {
             // inject and highlight html message
             browser.execute(
                     "var element = document.getElementById(\"message-" + messageId + "\");" + "element.innerHTML = '"
-                            + fixedHtml + "';" + "hljs.highlightElement(element.querySelector('pre code'));"
+                            + fixedHtml + "';" + "hljs.highlightAll();"
+//                            + fixedHtml + "';" + "hljs.highlightElement(element.querySelector('pre code'));"
             );
             // Scroll down
             browser.execute("window.scrollTo(0, document.body.scrollHeight);");
