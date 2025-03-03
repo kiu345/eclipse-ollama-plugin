@@ -5,6 +5,10 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.text.StringEscapeUtils;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 
 /**
  * A utility class for parsing and converting a text prompt to an HTML formatted string.
@@ -42,7 +46,7 @@ public class InputParser {
             scanner.useDelimiter("\n");
 
             // TODO: fix output for tabbed code and other content
-            var codeBlockPattern = Pattern.compile("^([\\s]*)```([aA-zZ]*)$");
+            var codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
             var functionCallPattern = Pattern.compile("^\"function_call\".*");
             while (scanner.hasNext()) {
                 var line = scanner.next();
@@ -175,6 +179,7 @@ public class InputParser {
     }
 
     public static String markdown(String input) {
+        /*
         // Replace headers
         input = input.replaceAll("^# (.*?)$", "<h1>$1</h1>");
         input = input.replaceAll("^## (.*?)$", "<h2>$1</h2>");
@@ -217,8 +222,19 @@ public class InputParser {
 
         // Horizontal Rule
         input = input.replaceAll("^(\\*\\*\\*|---)$", "<hr>");
+*/
+        MutableDataSet options = new MutableDataSet();
+        // uncomment to set optional extensions
+        //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
+        // uncomment to convert soft-breaks to hard breaks
+        //options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
+        Parser parser = Parser.builder(options).build();
+        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
 
-        return input;
+        Node document = parser.parse(input);
+        String html = renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
+
+        return html;
     }
 
     public String removeLastBr(String input) {

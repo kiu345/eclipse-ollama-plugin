@@ -5,6 +5,10 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.text.StringEscapeUtils;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 
 /**
  * A utility class for parsing and converting a text prompt to an HTML formatted string.
@@ -41,7 +45,7 @@ public class PromptParser {
 
         try (var scanner = new Scanner(prompt)) {
             scanner.useDelimiter("\n");
-            var codeBlockPattern = Pattern.compile("^```([aA-zZ]*)$");
+            var codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
             var functionCallPattern = Pattern.compile("^\"function_call\".*");
             while (scanner.hasNext()) {
                 var line = scanner.next();
@@ -49,8 +53,9 @@ public class PromptParser {
                 var functionBlockMatcher = functionCallPattern.matcher(line);
 
                 if (codeBlockMatcher.find()) {
-                    var lang = codeBlockMatcher.group(1);
-                    handleCodeBlock(out, lang);
+                    var indentSize = codeBlockMatcher.group(1).length();
+                    var lang = codeBlockMatcher.group(2);
+                    handleCodeBlock(out, lang, indentSize);
                 }
                 else if (functionBlockMatcher.find()) {
                     handleFunctionCall(out, line);
@@ -143,7 +148,7 @@ public class PromptParser {
         }
     }
 
-    private void handleCodeBlock(StringBuilder out, String lang) {
+    private void handleCodeBlock(StringBuilder out, String lang, int indent) {
         if ((state & CODE_BLOCK_STATE) != CODE_BLOCK_STATE) {
             String codeBlockId = UUID.randomUUID().toString();
             out.append(
@@ -151,8 +156,9 @@ public class PromptParser {
                             <input type="button" onClick="eclipseCopyCode(document.getElementById('${codeBlockId}').innerText)" value="Copy" />
                             <input type="button" onClick="eclipseSaveCode(document.getElementById('${codeBlockId}').innerText)" value="Save" />
                             <input type="${showApplyPatch}" onClick="eclipseApplyPatch(document.getElementById('${codeBlockId}').innerText)" value="ApplyPatch"/>
-                            <pre><code lang="${lang}" id="${codeBlockId}">
+                            <pre style="margin-left: ${indent}pt;"><code lang="${lang}" id="${codeBlockId}">
                             """
+                            .replace("${indent}", "" + (indent * 5))
                             .replace("${lang}", lang)
                             .replace("${codeBlockId}", codeBlockId)
                             .replace("${showApplyPatch}", "diff".equals(lang) ? "button" : "hidden") // show "Apply Patch" button for diffs
@@ -171,6 +177,7 @@ public class PromptParser {
     }
 
     public static String markdown(String input) {
+        /*
         // Replace headers
         input = input.replaceAll("^# (.*?)$", "<h1>$1</h1>");
         input = input.replaceAll("^## (.*?)$", "<h2>$1</h2>");
@@ -213,7 +220,19 @@ public class PromptParser {
 
         // Horizontal Rule
         input = input.replaceAll("^(\\*\\*\\*|---)$", "<hr>");
+*/
 
-        return input;
+        MutableDataSet options = new MutableDataSet();
+        // uncomment to set optional extensions
+        //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
+        // uncomment to convert soft-breaks to hard breaks
+        //options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
+        Parser parser = Parser.builder(options).build();
+        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
+
+        Node document = parser.parse(input);
+        String html = renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
+
+        return html;
     }
 }
