@@ -23,7 +23,6 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
@@ -35,8 +34,6 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.FormAttachment;
-import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -138,11 +135,16 @@ public class ChatViewPart {
     public void createControls(Composite parent) {
         resourceManager = new LocalResourceManager(JFaceResources.getResources());
 
-        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
-        sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
+//        sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        Composite aiArea = new Composite(parent, SWT.FILL);
+        GridLayout layout = new GridLayout();
+        layout.numColumns = 1; // One column for vertical alignment
+        aiArea.setLayout(layout);
 
-        Composite browserContainer = new Composite(sashForm, SWT.VERTICAL);
+        Composite browserContainer = new Composite(aiArea, SWT.FILL);
         browserContainer.setLayout(new FillLayout(SWT.VERTICAL));
+        browserContainer.setLayoutData(new GridData(GridData.FILL_BOTH)); // Fill both horizontally and vertically
 
         browser = createChatView(browserContainer);
 
@@ -150,7 +152,8 @@ public class ChatViewPart {
 //        new CopyCodeFunction(browser, "eclipseFunc");
 //        new SaveCodeFunction(browser, "eclipseFunc");
 
-        Composite controls = new Composite(sashForm, SWT.NONE);
+        Composite controls = new Composite(aiArea, SWT.NONE);
+        controls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
 //        Composite attachmentsPanel = createAttachmentsPanel(controls);
 //        inputArea = createUserInput(controls);
@@ -185,10 +188,8 @@ public class ChatViewPart {
 
         makeComboList();
 
-        modelCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, buttons.length, 1));
+        modelCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, buttons.length-1, 1));
 
-//        withVision = addCheckField( controls, "With Vision:");
-//        withFunctionCalls = addCheckField( controls, "With Function Calls:");
         withTemperature = addScaleField(controls, "Temperature");
         withTemperature.addSelectionListener(new SelectionListener() {
 
@@ -204,8 +205,10 @@ public class ChatViewPart {
         });
         withTemperature.setSelection(configuration.getTemperature().orElse(5));
 
+        withFunctionCalls = addCheckField( controls, "With Function Calls:");
+
         // Sets the initial weight ratio: 75% browser, 25% controls
-        sashForm.setWeights(new int[] { 80, 20 });
+//        aiArea.setWeights(new int[] { 80, 20 });
 
         // Enable DnD for the controls below the chat view
         dropManager.registerDropTarget(controls);
@@ -233,25 +236,25 @@ public class ChatViewPart {
     private Control addFormControl(Control control, Composite form, String labelText) {
         Label label = new Label(form, SWT.NONE);
         label.setText(labelText);
-        FormData labelData = new FormData();
+//        FormData labelData = new FormData();
         Control[] children = form.getChildren();
         if (children.length == 2) {
             // First control, so attach it to the top of the form
-            labelData.top = new FormAttachment(0, 10);
+//            labelData.top = new FormAttachment(0, 10);
         }
         else {
             // Attach it below the last control
-            Control lastControl = children[children.length - 3];
-            labelData.top = new FormAttachment(lastControl, 10);
+//            Control lastControl = children[children.length - 3];
+//            labelData.top = new FormAttachment(lastControl, 10);
         }
-        labelData.left = new FormAttachment(0, 10);
-        label.setLayoutData(labelData);
+//        labelData.left = new FormAttachment(0, 10);
+//        label.setLayoutData(labelData);
 
-        FormData textData = new FormData();
-        textData.left = new FormAttachment(0, 150);
-        textData.right = new FormAttachment(100, -10);
-        textData.top = new FormAttachment(label, -2, SWT.TOP);
-        control.setLayoutData(textData);
+//        FormData textData = new FormData();
+//        textData.left = new FormAttachment(0, 150);
+//        textData.right = new FormAttachment(100, -10);
+//        textData.top = new FormAttachment(label, -2, SWT.TOP);
+//        control.setLayoutData(textData);
         return control;
     }
 

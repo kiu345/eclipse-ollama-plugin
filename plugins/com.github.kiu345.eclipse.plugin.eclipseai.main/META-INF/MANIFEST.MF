@@ -115,9 +115,6 @@ Import-Package: com.fasterxml.jackson.core;version="[2.18,3)",
  org.jsoup,
  org.jsoup.nodes,
  org.jsoup.select,
- org.openqa.selenium,
- org.openqa.selenium.chrome,
- org.openqa.selenium.chromium,
  org.osgi.framework;version="[1.10,2)",
  org.osgi.service.prefs;version="[1.1,2)"
 
