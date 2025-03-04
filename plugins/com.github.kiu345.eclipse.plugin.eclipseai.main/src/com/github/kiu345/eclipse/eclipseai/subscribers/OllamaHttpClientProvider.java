@@ -6,13 +6,13 @@ import jakarta.inject.Singleton;
 
 import org.eclipse.e4.core.di.annotations.Creatable;
 
-import com.github.kiu345.eclipse.eclipseai.services.OpenAIStreamJavaHttpClient;
+import com.github.kiu345.eclipse.eclipseai.services.AIStreamJavaHttpClient;
 
 @Creatable
 @Singleton
 public class OllamaHttpClientProvider {
     @Inject
-    private Provider<OpenAIStreamJavaHttpClient> clientProvider;
+    private Provider<AIStreamJavaHttpClient> clientProvider;
     @Inject
     private AppendMessageToViewSubscriber appendMessageToViewSubscriber;
     @Inject
@@ -20,8 +20,8 @@ public class OllamaHttpClientProvider {
     @Inject
     private PrintMessageSubscriber printMessageSubscriber;
 
-    public OpenAIStreamJavaHttpClient get() {
-        OpenAIStreamJavaHttpClient client = clientProvider.get();
+    public AIStreamJavaHttpClient get() {
+        AIStreamJavaHttpClient client = clientProvider.get();
         client.subscribe(printMessageSubscriber);
         client.subscribe(appendMessageToViewSubscriber);
         client.subscribe(functionCallSubscriber);

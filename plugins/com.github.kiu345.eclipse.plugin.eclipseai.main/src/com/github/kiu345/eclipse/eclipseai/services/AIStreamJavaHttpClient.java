@@ -44,7 +44,7 @@ import jakarta.inject.Inject;
  * This class allows subscribing to responses received from the OpenAI API and processes the chat completions.
  */
 @Creatable
-public class OpenAIStreamJavaHttpClient {
+public class AIStreamJavaHttpClient {
 
     private static final String CHAT_API_PATH = "/chat";
 
@@ -65,7 +65,7 @@ public class OpenAIStreamJavaHttpClient {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public OpenAIStreamJavaHttpClient() {
+    public AIStreamJavaHttpClient() {
 
         publisher = new SubmissionPublisher<>();
         preferenceStore = Activator.getDefault().getPreferenceStore();
