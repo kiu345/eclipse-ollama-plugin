@@ -5,9 +5,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-import jakarta.inject.Inject;
-import jakarta.inject.Provider;
-
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -21,6 +18,9 @@ import com.github.kiu345.eclipse.eclipseai.commands.FunctionExecutorProvider;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.model.FunctionCall;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 
 @Creatable
 public class ExecuteFunctionCallJob extends Job {
