@@ -10,7 +10,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,6 +30,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kiu345.eclipse.eclipseai.Activator;
+import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.commands.FunctionExecutorProvider;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
@@ -35,8 +38,19 @@ import com.github.kiu345.eclipse.eclipseai.model.Incoming;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
+import com.github.kiu345.eclipse.eclipseai.services.tools.SimpleAITools;
 import com.github.kiu345.eclipse.eclipseai.tools.ImageUtilities;
 
+import dev.langchain4j.agent.tool.ToolSpecification;
+import dev.langchain4j.agent.tool.ToolSpecifications;
+import dev.langchain4j.data.message.AiMessage;
+import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.request.ChatRequest;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
+import dev.langchain4j.model.ollama.OllamaChatRequestParameters;
+import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
 import jakarta.inject.Inject;
 
 /**
@@ -106,7 +120,7 @@ public class AIStreamJavaHttpClient {
             prompt.messages().stream().filter(e -> !e.getContent().isBlank()).map(message -> toJsonPayload(message, model)).forEach(messages::add);
 
             requestBody.put("model", model.model());
-            if (model.functionCalling()) {
+            if (model.functionCalling() && false) {
                 requestBody.put("functions", AnnotationToJsonConverter.convertDeclaredFunctionsToJson(functionExecutor.get().getFunctions()));
             }
             requestBody.put("messages", messages);
@@ -128,7 +142,7 @@ public class AIStreamJavaHttpClient {
         try {
             var userMessage = new LinkedHashMap<String, Object>();
             userMessage.put("role", message.getRole());
-            if (model.functionCalling()) {
+            if (model.functionCalling() && false) {
                 // function call results
                 if (Objects.nonNull(message.getName())) {
                     userMessage.put("name", message.getName());
@@ -150,7 +164,7 @@ public class AIStreamJavaHttpClient {
             String textContent = String.join("\n", textParts) + "\n\n" + message.getContent();
 
             // add image content
-            if (model.vision()) {
+            if (model.vision() && false) {
                 var content = new ArrayList<>();
                 var textObject = new LinkedHashMap<String, String>();
                 textObject.put("type", "text");
@@ -176,6 +190,17 @@ public class AIStreamJavaHttpClient {
         }
     }
 
+    private dev.langchain4j.data.message.ChatMessage toChatMessage(ChatMessage message) {
+        switch (message.role) {
+            case ChatMessage.ROLE_SYSTEM:
+                return new SystemMessage(message.getContent());
+            case ChatMessage.ROLE_AI:
+                return new AiMessage(message.getContent());
+            default:
+                return new UserMessage(message.getContent());
+        }
+    }
+
     /**
      * Converts a base64-encoded image data string into a structured JSON object suitable for API transmission.
      * <p>
@@ -195,6 +220,22 @@ public class AIStreamJavaHttpClient {
         imageObject.put("image_url", urlObject);
         return imageObject;
     }
+    
+    private List<ToolSpecification> getTools() {
+        List<ToolSpecification> result = new LinkedList<ToolSpecification>();
+        result.addAll(ToolSpecifications.toolSpecificationsFrom(SimpleAITools.class));
+        System.out.println(Arrays.toString(result.toArray()));
+        return result;
+    }
+    
+    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption) {
+//        return ChatRequest.builder()
+        return ChatRequest.builder()
+                .messages(messages)
+                .parameters(OllamaChatRequestParameters.builder().modelName(desciption.model()).build())
+//                .toolSpecifications(getTools())
+                .build();
+    }
 
     /**
      * Creates and returns a Runnable that will execute the HTTP request to OpenAI API
@@ -212,6 +253,29 @@ public class AIStreamJavaHttpClient {
             var modelName = configuration.getSelectedModel().orElseThrow();
             var model = configuration.getModelDescriptor(modelName).orElseThrow();
 
+            OllamaStreamingChatModel chatModel = new OllamaAdapter(configuration).getChat(model.model());
+            chatModel.doChat(createRequest(prompt.messages().stream().map(e -> toChatMessage(e)).toList(), model), new StreamingChatResponseHandler() {
+
+                @Override
+                public void onPartialResponse(String partialResponse) {
+                    publisher.submit(new Incoming(Incoming.Type.CONTENT, partialResponse));
+                }
+
+                @Override
+                public void onCompleteResponse(ChatResponse completeResponse) {
+                    publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
+                    publisher.close();
+                    logger.info(completeResponse.finishReason().name());
+                }
+
+                @Override
+                public void onError(Throwable error) {
+                    logger.error(error.getMessage(), error);
+                    publisher.closeExceptionally(error);
+                }
+
+            });
+/*
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofSeconds(configuration.getConnectionTimoutSeconds()))
                     .build();
@@ -316,6 +380,7 @@ public class AIStreamJavaHttpClient {
             finally {
                 publisher.close();
             }
+        */
         };
     }
 

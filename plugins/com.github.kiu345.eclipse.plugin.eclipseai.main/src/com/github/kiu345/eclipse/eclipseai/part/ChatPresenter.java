@@ -28,12 +28,15 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
 import com.github.kiu345.eclipse.eclipseai.Activator;
+import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
+import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.handlers.EclipseAIHandlerInvoker;
 import com.github.kiu345.eclipse.eclipseai.jobs.EclipseAIJobConstants;
 import com.github.kiu345.eclipse.eclipseai.jobs.SendConversationJob;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
+import com.github.kiu345.eclipse.eclipseai.preferences.AIType;
 import com.github.kiu345.eclipse.eclipseai.preferences.PreferenceConstants;
 import com.github.kiu345.eclipse.eclipseai.prompt.ChatMessageFactory;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
@@ -74,6 +77,8 @@ public class ChatPresenter {
 
     private static final String LAST_SELECTED_DIR_KEY = "lastSelectedDirectory";
 
+    private ChatAdapter chatAdapter;
+
     // Preference node for your plugin
     private Preferences preferences = InstanceScope.INSTANCE.getNode("com.github.kiu345.eclipse.eclipseai");
 
@@ -85,6 +90,19 @@ public class ChatPresenter {
     public void init() {
         appendMessageToViewSubscriber.setPresenter(this);
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(propChangeListener);
+        initChatAdapter();
+    }
+
+    private void initChatAdapter() {
+        String aiTypeName = preferences.get(PreferenceConstants.ECLIPSEAI_PROVIDER, AIType.OLLAMA.name());
+        AIType aiType = AIType.valueOf(aiTypeName);
+        switch (aiType) {
+            case OLLAMA:
+                chatAdapter = new OllamaAdapter(configuration);
+                break;
+            default:
+                logger.error("Unknown AI type:" + aiTypeName);
+        }
     }
 
     public void onClear() {
@@ -282,14 +300,24 @@ public class ChatPresenter {
     }
 
     private IPropertyChangeListener propChangeListener = e -> {
-        if (PreferenceConstants.ECLIPSEAI_BASE_URL.equals(e.getProperty()) ||
+        if (PreferenceConstants.ECLIPSEAI_PROVIDER.equals(e.getProperty()) ||
+                PreferenceConstants.ECLIPSEAI_BASE_URL.equals(e.getProperty()) ||
+                PreferenceConstants.ECLIPSEAI_API_BASE_PATH.equals(e.getProperty()) ||
                 PreferenceConstants.ECLIPSEAI_GET_MODEL_API_PATH.equals(e.getProperty()) ||
-                PreferenceConstants.ECLIPSEAI_API_BASE_URL.equals(e.getProperty()) ||
                 PreferenceConstants.ECLIPSEAI_API_KEY.equals(e.getProperty())) {
+            initChatAdapter();
             partAccessor.findMessageView().ifPresent(view -> {
                 view.makeComboList();
             });
         }
+//        if (PreferenceConstants.ECLIPSEAI_BASE_URL.equals(e.getProperty()) ||
+//                PreferenceConstants.ECLIPSEAI_GET_MODEL_API_PATH.equals(e.getProperty()) ||
+//                PreferenceConstants.ECLIPSEAI_API_BASE_PATH.equals(e.getProperty()) ||
+//                PreferenceConstants.ECLIPSEAI_API_KEY.equals(e.getProperty())) {
+//            partAccessor.findMessageView().ifPresent(view -> {
+//                view.makeComboList();
+//            });
+//        }
     };
 
 }

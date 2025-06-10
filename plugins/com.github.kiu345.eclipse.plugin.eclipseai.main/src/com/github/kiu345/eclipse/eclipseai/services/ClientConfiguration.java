@@ -61,7 +61,7 @@ public class ClientConfiguration {
 
     public String getApiBaseUrl() {
         IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
-        return getBaseUrl() + prefernceStore.getString(PreferenceConstants.ECLIPSEAI_API_BASE_URL);
+        return getBaseUrl() + prefernceStore.getString(PreferenceConstants.ECLIPSEAI_API_BASE_PATH);
     }
 
     public String getModelApiPath() {
