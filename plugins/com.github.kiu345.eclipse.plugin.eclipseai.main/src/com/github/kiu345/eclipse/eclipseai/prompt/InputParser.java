@@ -156,10 +156,10 @@ public class InputParser {
             out.append(
                     """
                             <pre class="inline" style="margin-left: ${indent}pt;"><code class="inline" lang="${lang}" id="${codeBlockId}">
-                            		"""
-                            .replace("${indent}", "" + (indent * 5))
-                            .replace("${codeBlockId}", codeBlockId)
-                            .replace("${lang}", lang)
+                    """
+                    .replace("${indent}", "" + (indent * 5))
+                    .replace("${codeBlockId}", codeBlockId)
+                    .replace("${lang}", lang)
             );
             state ^= CODE_BLOCK_STATE;
         }

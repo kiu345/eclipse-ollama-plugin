@@ -47,25 +47,41 @@ public class PromptParser {
             scanner.useDelimiter("\n");
             var codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
             var functionCallPattern = Pattern.compile("^\"function_call\".*");
+            StringBuilder textBuffer = new StringBuilder();
             while (scanner.hasNext()) {
                 var line = scanner.next();
                 var codeBlockMatcher = codeBlockPattern.matcher(line);
                 var functionBlockMatcher = functionCallPattern.matcher(line);
 
                 if (codeBlockMatcher.find()) {
+                    if (!textBuffer.isEmpty()) {
+                        handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                        textBuffer = new StringBuilder();
+                    }
                     var indentSize = codeBlockMatcher.group(1).length();
                     var lang = codeBlockMatcher.group(2);
                     handleCodeBlock(out, lang, indentSize);
                 }
                 else if (functionBlockMatcher.find()) {
+                    if (!textBuffer.isEmpty()) {
+                        handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                        textBuffer = new StringBuilder();
+                    }
                     handleFunctionCall(out, line);
                 }
                 else if (line.startsWith(TATT_CONTEXTSTART)) {
+                    if (!textBuffer.isEmpty()) {
+                        handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                        textBuffer = new StringBuilder();
+                    }
                     handleTextAttachmentStart(out, line);
                 }
                 else {
-                    handleNonCodeBlock(out, line, !scanner.hasNext());
+                   textBuffer.append(line+"\n");
                 }
+            }
+            if (!textBuffer.isEmpty()) {
+                handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
             }
         }
         return out.toString();
@@ -89,7 +105,7 @@ public class PromptParser {
                             <div class="function-call">
                             <details><summary>Function call</summary>
                             <pre>
-                            """ + line
+                    """ + line
 
             );
             state ^= FUNCION_CALL_STATE;
@@ -121,7 +137,7 @@ public class PromptParser {
         else if ((state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) {
             out.append("\n");
         }
-        else {
+        else if (!lastLine) {
             out.append("<br/>");
         }
     }
