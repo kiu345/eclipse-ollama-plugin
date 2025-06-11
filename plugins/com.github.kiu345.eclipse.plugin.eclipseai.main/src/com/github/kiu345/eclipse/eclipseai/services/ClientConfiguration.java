@@ -49,6 +49,16 @@ public class ClientConfiguration {
 
     }
 
+    public Optional<Boolean> getUseFunctions() {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        return Optional.of(prefernceStore.getBoolean(PreferenceConstants.ECLIPSEAI_USEFUNCTIONS));
+    }
+
+    public void setUseFunctions(Boolean useFunctions) {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        prefernceStore.setValue(PreferenceConstants.ECLIPSEAI_USEFUNCTIONS, useFunctions);
+    }
+
     public String getApiKey() {
         IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
         return prefernceStore.getString(PreferenceConstants.ECLIPSEAI_API_KEY);
