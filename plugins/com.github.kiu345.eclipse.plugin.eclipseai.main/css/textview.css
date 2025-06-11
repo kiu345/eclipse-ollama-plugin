@@ -16,7 +16,7 @@ body {
 
 .context {
 	flex-direction: column;
-	background-color: #c0c0c0;
+	background-color: #b0b0b0;
 	font-family: 'Roboto', sans-serif;
 	margin-top: 0.0rem;
 	margin-bottom: 1.0rem;
@@ -73,6 +73,8 @@ summary {
 
 /* User-specific styles */
 .chat-bubble.me {
+	width: 90%;
+	left: 0%;
 	align-self: flex-end;
 	padding: .5rem;
 	border-radius: 5px;
@@ -115,8 +117,13 @@ summary {
 }
 
 .chat-bubble.you {
+	width: 90%;
+	margin-left: 8%;
+	border: 1px solid #dcdcdc;
+	border-radius: 5px;
+	padding: .1rem .5rem;
 	align-self: flex-start;
-	background-color: #F3F3F3;
+	background-color: #F3F3F9;
 }
 
 .chat-bubble.you:last-child {
