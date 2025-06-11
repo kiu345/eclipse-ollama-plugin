@@ -206,6 +206,20 @@ public class ChatViewPart {
         withTemperature.setSelection(configuration.getTemperature().orElse(5));
 
         withFunctionCalls = addCheckField( controls, "With Function Calls:");
+        withFunctionCalls.addSelectionListener(new SelectionListener() {
+
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                logger.info("Set function usage to "+withFunctionCalls.getSelection());
+                configuration.setUseFunctions(withFunctionCalls.getSelection());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent arg0) {
+                logger.info("Set function usage to "+withFunctionCalls.getSelection());
+                configuration.setUseFunctions(withFunctionCalls.getSelection());
+            }
+        });
 
         // Sets the initial weight ratio: 75% browser, 25% controls
 //        aiArea.setWeights(new int[] { 80, 20 });
@@ -566,13 +580,15 @@ public class ChatViewPart {
 //        logger.info("setting messaage " + messageId + ":" + messageBody);
         uiSync.asyncExec(() -> {
             PromptParser parser = new PromptParser(messageBody);
-
             String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml()));
+            
             // inject and highlight html message
             browser.execute(
-                    "var element = document.getElementById(\"message-" + messageId + "\");" + "element.innerHTML = '"
-                            + fixedHtml + "';" + "hljs.highlightAll();"
-//                            + fixedHtml + "';" + "hljs.highlightElement(element.querySelector('pre code'));"
+                    "var element = document.getElementById(\"message-" + messageId + "\");"
+                    + "element.innerHTML = '" + fixedHtml + "';"
+    //                + "document.querySelectorAll('pre').forEach(el => { hljs.highlightElement(el);});"
+                  + "hljs.highlightAll();"
+//                  + "hljs.highlightElement(document.getElementById(\"message-" + messageId + "\"));"
             );
             // Scroll down
             browser.execute("window.scrollTo(0, document.body.scrollHeight);");
@@ -861,7 +877,7 @@ public class ChatViewPart {
         @Override
         public Object function(Object[] arguments) {
             if (arguments == null || arguments.length != 1) {
-                System.err.println("Invalid arguments for saveCode");
+                logger.error("Invalid arguments for saveCode");
                 return null;
             }
             String codeBlock = (String) arguments[0];
@@ -876,7 +892,7 @@ public class ChatViewPart {
                     writer.write(codeBlock);
                 }
                 catch (IOException e) {
-                    System.err.println("Error writing to file: " + e.getMessage());
+                    logger.error("Error writing to file: " + e.getMessage());
                 }
             }
 

@@ -1,22 +1,11 @@
 package com.github.kiu345.eclipse.eclipseai.services;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.function.Supplier;
@@ -27,10 +16,8 @@ import org.eclipse.e4.core.di.annotations.Creatable;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kiu345.eclipse.eclipseai.Activator;
-import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.commands.FunctionExecutorProvider;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
@@ -46,11 +33,11 @@ import dev.langchain4j.agent.tool.ToolSpecifications;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.SystemMessage;
 import dev.langchain4j.data.message.UserMessage;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
 import dev.langchain4j.model.chat.response.ChatResponse;
-import dev.langchain4j.model.chat.response.StreamingChatResponseHandler;
+import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.ollama.OllamaChatRequestParameters;
-import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
 import jakarta.inject.Inject;
 
 /**
@@ -59,6 +46,10 @@ import jakarta.inject.Inject;
  */
 @Creatable
 public class AIStreamJavaHttpClient {
+    interface Assistant {
+
+        String chat(String message);
+    }
 
     private static final String CHAT_API_PATH = "/chat";
 
@@ -220,20 +211,24 @@ public class AIStreamJavaHttpClient {
         imageObject.put("image_url", urlObject);
         return imageObject;
     }
-    
+
     private List<ToolSpecification> getTools() {
-        List<ToolSpecification> result = new LinkedList<ToolSpecification>();
+        List<ToolSpecification> result = new LinkedList<>();
         result.addAll(ToolSpecifications.toolSpecificationsFrom(SimpleAITools.class));
-        System.out.println(Arrays.toString(result.toArray()));
+//        System.out.println(Arrays.toString(result.toArray()));
         return result;
     }
-    
-    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption) {
-//        return ChatRequest.builder()
+
+    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption, boolean withFunctions) {
+        OllamaChatRequestParameters.Builder paramsBuilder = OllamaChatRequestParameters.builder();
+        paramsBuilder.modelName(desciption.model());
+        if (withFunctions) {
+            paramsBuilder.toolSpecifications(getTools());
+        }
+
         return ChatRequest.builder()
                 .messages(messages)
-                .parameters(OllamaChatRequestParameters.builder().modelName(desciption.model()).build())
-//                .toolSpecifications(getTools())
+                .parameters(paramsBuilder.build())
                 .build();
     }
 
@@ -251,136 +246,87 @@ public class AIStreamJavaHttpClient {
         return () -> {
 
             var modelName = configuration.getSelectedModel().orElseThrow();
-            var model = configuration.getModelDescriptor(modelName).orElseThrow();
+            var modelInfo = configuration.getModelDescriptor(modelName).orElseThrow();
 
-            OllamaStreamingChatModel chatModel = new OllamaAdapter(configuration).getChat(model.model());
-            chatModel.doChat(createRequest(prompt.messages().stream().map(e -> toChatMessage(e)).toList(), model), new StreamingChatResponseHandler() {
-
-                @Override
-                public void onPartialResponse(String partialResponse) {
-                    publisher.submit(new Incoming(Incoming.Type.CONTENT, partialResponse));
-                }
-
-                @Override
-                public void onCompleteResponse(ChatResponse completeResponse) {
-                    publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
-                    publisher.close();
-                    logger.info(completeResponse.finishReason().name());
-                }
-
-                @Override
-                public void onError(Throwable error) {
-                    logger.error(error.getMessage(), error);
-                    publisher.closeExceptionally(error);
-                }
-
-            });
-/*
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(configuration.getConnectionTimoutSeconds()))
+            ChatModel model = OllamaChatModel.builder()
+                    .baseUrl(modelInfo.baseUri())
+//                    .apiKey(modelInfo.apiKey())
+                    .modelName(modelInfo.model())
                     .build();
 
-            String requestBody = getRequestBody(prompt, model);
-            HttpRequest request = HttpRequest.newBuilder().uri(URI.create(configuration.getApiBaseUrl() + CHAT_API_PATH))
-                    .timeout(Duration.ofSeconds(configuration.getRequestTimoutSeconds()))
-                    .version(HttpClient.Version.HTTP_1_1)
-                    .header("Authorization", "Bearer " + model.apiKey())
-                    .header("Accept", "text/event-stream")
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
-
-            logger.info("Sending request to Ollama " + configuration.getApiBaseUrl() + CHAT_API_PATH + ".\n\n" + requestBody);
-
-            try {
-                HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-                if (response.statusCode() != 200) {
-                    logger.error(
-                            "Request failed with status code: " + response.statusCode() + " and response body: " + new String(response.body().readAllBytes())
-                    );
-                }
-                try (var inputStream = response.body();
-                        var inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-                        var reader = new BufferedReader(inputStreamReader)) {
-                    String line;
-                    while ((line = reader.readLine()) != null && !isCancelled.get()) {
-                        if (line.startsWith("data:")) {
-                            var data = line.substring(5).trim();
-                            if ("[DONE]".equals(data)) {
-                                break;
-                            }
-                            else {
-                                var mapper = new ObjectMapper();
-                                var choice = mapper.readTree(data).get("choices").get(0);
-                                var node = choice.get("delta");
-                                if (node.has("content")) {
-                                    var content = node.get("content").asText();
-                                    if (!"null".equals(content)) {
-                                        publisher.submit(new Incoming(Incoming.Type.CONTENT, content));
-                                    }
-                                }
-                                if (node.has("function_call")) {
-                                    var functionNode = node.get("function_call");
-                                    if (functionNode.has("name")) {
-                                        publisher.submit(
-                                                new Incoming(
-                                                        Incoming.Type.FUNCTION_CALL,
-                                                        String.format(
-                                                                "\"function_call\" : { \n \"name\": \"%s\",\n \"arguments\" :",
-                                                                functionNode.get("name").asText()
-                                                        )
-                                                )
-                                        );
-                                    }
-                                    if (functionNode.has("arguments")) {
-                                        publisher.submit(new Incoming(Incoming.Type.FUNCTION_CALL, node.get("function_call").get("arguments").asText()));
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            var mapper = new ObjectMapper();
-                            var data = line.trim();
-
-                            if (!data.isEmpty()) {
-
-                                JsonNode messageContainer = mapper.readTree(data).get("message");
-                                if (messageContainer != null) {
-                                    var message = messageContainer.get("content").asText();
-                                    publisher.submit(new Incoming(Incoming.Type.CONTENT, message));
-                                }
-                                else {
-                                    JsonNode errorContainer = mapper.readTree(data).get("error");
-                                    if (errorContainer != null) {
-                                        var message = errorContainer.asText();
-                                        publisher.submit(new Incoming(Incoming.Type.ERROR, message));
-                                    }
-                                    else {
-                                        logger.warn("could not find a container in " + data);
-                                    }
-                                }
-
-                            }
-                            else {
-                                logger.warn("empty string recived");
-                            }
-                        }
-                    }
-                }
-                if (isCancelled.get()) {
-                    publisher.closeExceptionally(new CancellationException());
-                }
+            ChatRequest request = createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), modelInfo, configuration.getUseFunctions().orElse(false));
+            ChatResponse response = model.chat(request);
+            logger.info("Received response of type "+response.aiMessage().type().name());
+            switch (response.aiMessage().type()) {
+                case AI:
+                    publisher.submit(new Incoming(Incoming.Type.CONTENT, response.aiMessage().text()));
+                    break;
+                case SYSTEM:
+                    publisher.submit(new Incoming(Incoming.Type.CONTENT, response.aiMessage().text()));
+                    break;
+                default:
+                    publisher.submit(new Incoming(Incoming.Type.CONTENT, response.aiMessage().text()));
+                    break;
             }
-            catch (Exception e) {
-                logger.error(e.getMessage(), e);
-                publisher.submit(new Incoming(Incoming.Type.ERROR, e.getLocalizedMessage()));
-                publisher.closeExceptionally(e);
-            }
-            finally {
-                publisher.close();
-            }
-        */
+            publisher.close();
+
+//            String answer = assistant.chat("Hi");
+//            publisher.submit(new Incoming(Incoming.Type.CONTENT, answer));
+
+            /*
+             * final OllamaStreamingChatModel chatModel = new OllamaAdapter(configuration).getChat(model.model());
+             * chatModel.doChat(createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), model), new StreamingChatResponseHandler() {
+             * private StringBuilder builder = new StringBuilder();
+             * 
+             * 
+             * @Override
+             * public void onPartialResponse(String partialResponse) {
+             * builder.append(partialResponse);
+             * }
+             * 
+             * @Override
+             * public void onCompleteResponse(ChatResponse completeResponse) {
+             * ChatMessageType type = completeResponse.aiMessage().type();
+             * logger.info(type.name());
+             * switch (type) {
+             * case AI: {
+             * for (ToolExecutionRequest execRequest: completeResponse.aiMessage().toolExecutionRequests()) {
+             * }
+             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
+             * break;
+             * }
+             * case CUSTOM: {
+             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
+             * break;
+             * }
+             * case SYSTEM: {
+             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
+             * break;
+             * }
+             * case TOOL_EXECUTION_RESULT: {
+             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
+             * break;
+             * }
+             * case USER: {
+             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
+             * break;
+             * }
+             * default:
+             * throw new IllegalArgumentException("Unexpected value: " + type);
+             * }
+             * publisher.close();
+             * logger.info(completeResponse.finishReason().name());
+             * }
+             * 
+             * @Override
+             * public void onError(Throwable error) {
+             * logger.error(error.getMessage(), error);
+             * publisher.closeExceptionally(error);
+             * }
+             * 
+             * });
+             * 
+             */
         };
     }
 
