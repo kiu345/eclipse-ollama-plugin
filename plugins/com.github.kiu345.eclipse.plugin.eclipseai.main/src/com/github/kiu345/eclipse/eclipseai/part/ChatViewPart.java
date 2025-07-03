@@ -170,6 +170,8 @@ public class ChatViewPart {
         }
 
         modelCombo = new Combo(controls, SWT.DROP_DOWN | SWT.READ_ONLY);
+        withTemperature = addScaleField(controls, "Temperature");
+        withFunctionCalls = addCheckField( controls, "With Function Calls:");
 
         modelCombo.addSelectionListener(new SelectionListener() {
 
@@ -177,12 +179,16 @@ public class ChatViewPart {
             public void widgetSelected(SelectionEvent arg0) {
                 logger.info("Setting model to " + modelCombo.getText());
                 configuration.setSelectedModel(modelCombo.getText());
+                ModelDescriptor model =  httpClient.getModel(modelCombo.getText());
+                withFunctionCalls.setEnabled(model.functionCalling());
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent arg0) {
                 logger.info("Setting model to " + modelCombo.getText());
                 configuration.setSelectedModel(modelCombo.getText());
+                ModelDescriptor model =  httpClient.getModel(modelCombo.getText());
+                withFunctionCalls.setEnabled(model.functionCalling());
             }
         });
 
@@ -190,7 +196,6 @@ public class ChatViewPart {
 
         modelCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, buttons.length-1, 1));
 
-        withTemperature = addScaleField(controls, "Temperature");
         withTemperature.addSelectionListener(new SelectionListener() {
 
             @Override
@@ -205,7 +210,6 @@ public class ChatViewPart {
         });
         withTemperature.setSelection(configuration.getTemperature().orElse(5));
 
-        withFunctionCalls = addCheckField( controls, "With Function Calls:");
         withFunctionCalls.addSelectionListener(new SelectionListener() {
 
             @Override
