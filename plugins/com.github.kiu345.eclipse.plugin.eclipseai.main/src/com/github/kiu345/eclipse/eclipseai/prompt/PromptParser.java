@@ -29,7 +29,10 @@ public class PromptParser {
 
     private int state = DEFAULT_STATE;
 
-    private final String prompt;
+    private static final String START_THINK = "<think>";
+    private static final String END_THINK = "</think>";
+
+    private String prompt;
 
     public PromptParser(String prompt) {
         this.prompt = prompt;
@@ -42,6 +45,25 @@ public class PromptParser {
      */
     public String parseToHtml() {
         var out = new StringBuilder();
+
+        var thinkString = "";
+        
+        if (prompt.startsWith("<think>")) {
+            int think_end = prompt.indexOf(END_THINK);
+            out.append("<div class=\"thinking\">");
+            if (think_end >= 0) {
+                thinkString = prompt.substring(START_THINK.length(),think_end);
+                prompt = prompt.substring(think_end+END_THINK.length());
+                out.append(StringEscapeUtils.escapeHtml4(thinkString));
+                out.append("</div>");
+            }
+            else {
+                thinkString = prompt.substring(START_THINK.length());
+                out.append(StringEscapeUtils.escapeHtml4(thinkString));
+                out.append("</div>");
+                return out.toString();
+            }
+        }
 
         try (var scanner = new Scanner(prompt)) {
             scanner.useDelimiter("\n");
