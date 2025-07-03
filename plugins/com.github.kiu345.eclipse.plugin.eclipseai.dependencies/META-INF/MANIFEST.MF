@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: eclipseai-dependencies
 Bundle-SymbolicName: com.github.kiu345.eclipse.plugin.eclipseai.dependencies;singleton:=true
-Bundle-Version: 1.0.4
+Bundle-Version: 1.0.5
 Bundle-ClassPath: annotations/annotations-24.0.1.jar,
  flexmark/flexmark-0.64.8.jar,
  flexmark/flexmark-ext-emoji-0.64.8.jar,

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: EclipseAI
 Bundle-SymbolicName: com.github.kiu345.eclipse.plugin.eclipseai.main;singleton:=true
 Bundle-Vendor: Stefan Daurer
-Bundle-Version: 1.0.4.qualifier
+Bundle-Version: 1.0.5.qualifier
 Export-Package: com.github.kiu345.eclipse.eclipseai;uses:="org.osgi.framework,com.github.kiu345.eclipse.eclipseai.preferences,org.eclipse.ui.plugin",
  com.github.kiu345.eclipse.eclipseai.commands;uses:="org.eclipse.jdt.core,org.eclipse.core.resources",
  com.github.kiu345.eclipse.eclipseai.handlers;
