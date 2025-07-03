@@ -13,6 +13,7 @@ import dev.langchain4j.model.chat.listener.ChatModelErrorContext;
 import dev.langchain4j.model.chat.listener.ChatModelListener;
 import dev.langchain4j.model.chat.listener.ChatModelResponseContext;
 import dev.langchain4j.model.ollama.OllamaModel;
+import dev.langchain4j.model.ollama.OllamaModelCard;
 import dev.langchain4j.model.ollama.OllamaModels;
 import dev.langchain4j.model.ollama.OllamaModels.OllamaModelsBuilder;
 import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
@@ -45,7 +46,12 @@ public class OllamaAdapter implements ChatAdapter {
             List<OllamaModel> models = response.content();
             if (models != null) {
                 for (OllamaModel model : models) {
-                    ModelDescriptor modelDesc = new ModelDescriptor(clientConfig.getBaseUrl(), model.getName(), clientConfig.getApiKey(), "ollama", model.getName(), true, true);
+                    OllamaModelCard card = modelsService.modelCard(model).content();
+                    boolean function =  (card.getTemplate().contains("{{ .Function.Name }}"));
+                    boolean thinking =  (card.getTemplate().contains("{{ .Thinking }}"));
+                    ModelDescriptor modelDesc = new ModelDescriptor(
+                            clientConfig.getBaseUrl(), model.getName(), clientConfig.getApiKey(), "ollama", model.getName(), false, function, thinking
+                    );
                     result.add(modelDesc);
                 }
             }
