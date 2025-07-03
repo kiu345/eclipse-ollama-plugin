@@ -45,7 +45,7 @@ public class OpenAIAdapter implements ChatAdapter {
         List<ModelDescriptor> result = EnumSet
                 .allOf(OpenAiChatModelName.class)
                 .stream()
-                .map(e -> new ModelDescriptor(DEFAULT_URL, e.toString(), apiKey, "openai", e.name(), true, true))
+                .map(e -> new ModelDescriptor(DEFAULT_URL, e.toString(), apiKey, "openai", e.name(), true, true, false))
                 .toList();
         return result;
     }
