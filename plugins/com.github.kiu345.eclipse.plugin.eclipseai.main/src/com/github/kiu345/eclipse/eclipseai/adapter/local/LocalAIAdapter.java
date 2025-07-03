@@ -42,7 +42,7 @@ public class LocalAIAdapter implements ChatAdapter {
 
     public List<ModelDescriptor> getModels() {
         ArrayList<ModelDescriptor> result = new ArrayList<>();
-        ModelDescriptor modelDesc = new ModelDescriptor(apiBaseAddress, "gpt-4", apiKey, "local", "gpt-4", true, true);
+        ModelDescriptor modelDesc = new ModelDescriptor(apiBaseAddress, "gpt-4", apiKey, "local", "gpt-4", true, true, false);
         result.add(modelDesc);
         return result;
     }
