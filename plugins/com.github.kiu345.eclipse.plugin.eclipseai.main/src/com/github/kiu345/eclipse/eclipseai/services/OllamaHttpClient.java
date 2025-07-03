@@ -19,4 +19,9 @@ public class OllamaHttpClient {
         OllamaAdapter adapter = new OllamaAdapter(configuration);
         return adapter.getModels();
     }
+
+    public ModelDescriptor getModel(String name) {
+        OllamaAdapter adapter = new OllamaAdapter(configuration);
+        return adapter.getModels().stream().filter(e -> e.title().equals(name)).findFirst().get();
+    }
 }
