@@ -541,7 +541,7 @@ public class ChatViewPart {
                     <div class="theme-vs-min">
                       <div id="content">
                         <div id="suggestions" class="chat-bubble"></div>
-                        <div id="inputarea" class="chat-bubble me current" contenteditable="true" autofocus placeholder="Ask anything, '/' for slash commands"></div>
+                        <div id="inputarea" class="chat-bubble me current" contenteditable="plaintext-only" autofocus placeholder="Ask anything, '/' for slash commands"></div>
                         <div id="context" class="context">
                           <div class="header">Context</div>
                           <ul id="attachments" class="file-list">

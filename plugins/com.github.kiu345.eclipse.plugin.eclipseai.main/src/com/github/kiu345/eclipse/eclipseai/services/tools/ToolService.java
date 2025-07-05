@@ -11,6 +11,8 @@ import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.e4.core.contexts.ContextInjectionFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Creatable;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -27,6 +29,8 @@ import jakarta.inject.Inject;
 public class ToolService {
     @Inject
     private ILog log;
+    @Inject
+    private IEclipseContext iEclipseContext;
     
     private Class<?>[] classes;
 
@@ -105,9 +109,11 @@ public class ToolService {
     }
 
     private Object executeTool(ToolInfo tool, String arguments) throws IOException, ReflectiveOperationException {
-        log.info("tool found: "+tool.getTool().name());
+        log.info("tool found: "+tool.getTool().name()+" with "+arguments);
         Map<String, Object> params = argumentsAsMap(arguments);
+        
         Object serviceObj = tool.method.getDeclaringClass().getDeclaredConstructor().newInstance();
+        ContextInjectionFactory.inject(serviceObj, iEclipseContext);
         Object[] methodParams = params.values().toArray(); 
         return tool.method.invoke(serviceObj, methodParams);
     }
