@@ -1,4 +1,4 @@
-package com.github.kiu345.eclipse.eclipseai.commands;
+package com.github.kiu345.eclipse.eclipseai.services.tools;
 
 import java.util.ArrayList;
 import java.util.List;

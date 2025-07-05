@@ -1,4 +1,4 @@
-package com.github.kiu345.eclipse.eclipseai.commands;
+package com.github.kiu345.eclipse.eclipseai.services.tools;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.e4.core.di.annotations.Creatable;

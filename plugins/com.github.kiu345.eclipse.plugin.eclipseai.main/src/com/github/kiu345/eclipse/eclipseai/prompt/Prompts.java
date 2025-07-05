@@ -8,7 +8,6 @@ public enum Prompts {
     GIT_COMMENT("gitcomment-prompt.txt", "Git Comment"),
     REFACTOR("refactor-prompt.txt", "Refactor"),
     TEST_CASE("testcase-prompt.txt", "JUnit Test case"),
-    UPGRADE_SOURCE("upgrade-prompt.txt", "Upgrade Source"),
     DISCUSS_SELECTED("discuss-selected.txt", "Discuss Selected code");
 
     private final String fileName;
