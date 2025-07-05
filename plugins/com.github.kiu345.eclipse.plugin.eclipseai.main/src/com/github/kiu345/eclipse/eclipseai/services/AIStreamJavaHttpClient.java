@@ -1,8 +1,8 @@
 package com.github.kiu345.eclipse.eclipseai.services;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,20 +18,20 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.kiu345.eclipse.eclipseai.Activator;
-import com.github.kiu345.eclipse.eclipseai.commands.FunctionExecutorProvider;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.model.Incoming;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
-import com.github.kiu345.eclipse.eclipseai.services.tools.SimpleAITools;
+import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService;
+import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService.ToolInfo;
 import com.github.kiu345.eclipse.eclipseai.tools.ImageUtilities;
 
-import dev.langchain4j.agent.tool.ToolSpecification;
-import dev.langchain4j.agent.tool.ToolSpecifications;
+import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.SystemMessage;
+import dev.langchain4j.data.message.ToolExecutionResultMessage;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.chat.request.ChatRequest;
@@ -64,7 +64,7 @@ public class AIStreamJavaHttpClient {
     private ClientConfiguration configuration;
 
     @Inject
-    private FunctionExecutorProvider functionExecutor;
+    private ToolService toolService;
 
     private IPreferenceStore preferenceStore;
 
@@ -111,9 +111,6 @@ public class AIStreamJavaHttpClient {
             prompt.messages().stream().filter(e -> !e.getContent().isBlank()).map(message -> toJsonPayload(message, model)).forEach(messages::add);
 
             requestBody.put("model", model.model());
-            if (model.functionCalling() && false) {
-                requestBody.put("functions", AnnotationToJsonConverter.convertDeclaredFunctionsToJson(functionExecutor.get().getFunctions()));
-            }
             requestBody.put("messages", messages);
 
             float temperature = configuration.getTemperature().orElse(5);
@@ -137,12 +134,6 @@ public class AIStreamJavaHttpClient {
                 // function call results
                 if (Objects.nonNull(message.getName())) {
                     userMessage.put("name", message.getName());
-                }
-                if (Objects.nonNull(message.getFunctionCall())) {
-                    var functionCallObject = new LinkedHashMap<String, String>();
-                    functionCallObject.put("name", message.getFunctionCall().name());
-                    functionCallObject.put("arguments", objectMapper.writeValueAsString(message.getFunctionCall().arguments()));
-                    userMessage.put("function_call", functionCallObject);
                 }
             }
 
@@ -212,18 +203,11 @@ public class AIStreamJavaHttpClient {
         return imageObject;
     }
 
-    private List<ToolSpecification> getTools() {
-        List<ToolSpecification> result = new LinkedList<>();
-        result.addAll(ToolSpecifications.toolSpecificationsFrom(SimpleAITools.class));
-//        System.out.println(Arrays.toString(result.toArray()));
-        return result;
-    }
-
     private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption, boolean withFunctions) {
         OllamaChatRequestParameters.Builder paramsBuilder = OllamaChatRequestParameters.builder();
         paramsBuilder.modelName(desciption.model());
         if (withFunctions) {
-            paramsBuilder.toolSpecifications(getTools());
+            paramsBuilder.toolSpecifications(toolService.findTools().stream().map(e -> e.getTool()).toList());
         }
 
         return ChatRequest.builder()
@@ -255,8 +239,38 @@ public class AIStreamJavaHttpClient {
                     .build();
 
             ChatRequest request = createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), modelInfo, configuration.getUseFunctions().orElse(false));
-            ChatResponse response = model.chat(request);
-            logger.info("Received response of type "+response.aiMessage().type().name());
+            ChatResponse response = model.doChat(request);
+            logger.info("Received response of type " + response.aiMessage().type().name());
+//            response.aiMessage().toolExecutionRequests().getFirst().
+            while (response.aiMessage().hasToolExecutionRequests()) {
+                logger.info("Tool exec request detected");
+                AiMessage aiMessage = response.aiMessage();
+
+                List<dev.langchain4j.data.message.ChatMessage> allMessages = new ArrayList<dev.langchain4j.data.message.ChatMessage>();
+                allMessages.addAll(request.messages());
+                allMessages.add(aiMessage);
+                
+                List<ToolInfo> tools = toolService.findTools();
+                for (ToolExecutionRequest execRequest : response.aiMessage().toolExecutionRequests()) {
+                    String toolResultValue = "";
+                    
+                    try {
+                        toolResultValue = toolService.executeTool(tools, execRequest);
+                    }
+                    catch (IOException e) {
+                        logger.warn(e.getMessage(), e);
+                        continue;
+                    }
+                    ToolExecutionResultMessage toolExecutionResultMessage = ToolExecutionResultMessage.from(execRequest, toolResultValue);
+
+                    allMessages.add(toolExecutionResultMessage);
+                }
+                logger.info("resending request");
+
+                request = createRequest(allMessages, modelInfo, configuration.getUseFunctions().orElse(false));
+                response = model.doChat(request);
+            }
+
             switch (response.aiMessage().type()) {
                 case AI:
                     publisher.submit(new Incoming(Incoming.Type.CONTENT, response.aiMessage().text()));

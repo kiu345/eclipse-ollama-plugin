@@ -16,15 +16,12 @@ public class OllamaHttpClientProvider {
     @Inject
     private AppendMessageToViewSubscriber appendMessageToViewSubscriber;
     @Inject
-    private FunctionCallSubscriber functionCallSubscriber;
-    @Inject
     private PrintMessageSubscriber printMessageSubscriber;
 
     public AIStreamJavaHttpClient get() {
         AIStreamJavaHttpClient client = clientProvider.get();
         client.subscribe(printMessageSubscriber);
         client.subscribe(appendMessageToViewSubscriber);
-        client.subscribe(functionCallSubscriber);
         return client;
     }
 }
