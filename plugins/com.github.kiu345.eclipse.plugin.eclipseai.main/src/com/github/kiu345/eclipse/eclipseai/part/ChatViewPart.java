@@ -45,9 +45,6 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
@@ -94,7 +91,6 @@ public class ChatViewPart {
 
     @SuppressWarnings("unused")
     private Button withVision;
-    @SuppressWarnings("unused")
     private Button withFunctionCalls;
     private Scale withTemperature;
 
@@ -127,12 +123,6 @@ public class ChatViewPart {
     public void clearChatView() {
         uiSync.asyncExec(() -> initializeChatView(browser));
     }
-
-//    public void clearUserInput() {
-//        uiSync.asyncExec(() -> {
-//            inputArea.setText("");
-//        });
-//    }
 
     @PostConstruct
     public void createControls(Composite parent) {
@@ -257,7 +247,6 @@ public class ChatViewPart {
         return scale;
     }
 
-    @SuppressWarnings("unused")
     private Button addCheckField(Composite form, String labelText) {
         Button button = new Button(form, SWT.CHECK);
         addFormControl(button, form, labelText);
@@ -423,31 +412,6 @@ public class ChatViewPart {
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                // Get the active workbench page
-                IWorkbench workbench = PlatformUI.getWorkbench();
-                IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
-
-                // Get all editor references
-                IEditorReference[] editorReferences = page.getEditorReferences();
-
-                // Iterate through editors
-                for (IEditorReference ref : editorReferences) {
-                    IEditorPart editor = ref.getEditor(false); // false to avoid blocking
-                    if (editor != null) {
-                        // Access editor details
-                        System.out.println("Editor ID: " + editor.getEditorInput().getName());
-                        System.out.println("Editor Title: " + editor.getTitle());
-                        System.out.println("Editor Class: " + editor.getClass());
-                        System.out.println("Editor Plugin: " + editor.getEditorSite().getPluginId());
-                    }
-                    else {
-                        System.out.println(
-                                "Inactive editor Title: " + ref.getName()
-                        );
-                        ref.getEditor(true);
-                    }
-                }
-
                 refreshArea();
             }
         });
@@ -542,36 +506,6 @@ public class ChatViewPart {
         new SendPromptFunction(browser, "eclipseSendPrompt");
     }
 
-    private void initializeChatView(Browser browser) {
-        String htmlTemplate = """
-                <html>
-                  <style>${css}</style>
-                  <script>${js}</script>
-                  <body>
-                    <div class="theme-vs-min">
-                      <div id="content">
-                        <div id="suggestions" class="chat-bubble"></div>
-                        <div id="inputarea" class="chat-bubble me current" contenteditable="plaintext-only" autofocus placeholder="Ask anything, '/' for slash commands"></div>
-                        <div id="context" class="context">
-                          <div class="header">Context</div>
-                          <ul id="attachments" class="file-list">
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </body>
-                </html>
-                """;
-
-        String js = loadJavaScripts();
-        String css = loadCss();
-        htmlTemplate = htmlTemplate.replace("${js}", js);
-        htmlTemplate = htmlTemplate.replace("${css}", css);
-
-        // Initialize the browser with base HTML and CSS
-        browser.setText(htmlTemplate);
-    }
-
     /**
      * Loads the CSS files for the HTML component.
      *
@@ -618,8 +552,37 @@ public class ChatViewPart {
         return js.toString();
     }
 
+    private void initializeChatView(Browser browser) {
+        String htmlTemplate = """
+                <html>
+                  <style>${css}</style>
+                  <script>${js}</script>
+                  <body>
+                    <div class="theme-vs-min">
+                      <div id="content">
+                        <div id="suggestions" class="chat-bubble"></div>
+                        <div id="inputarea" class="chat-bubble me current" contenteditable="plaintext-only" autofocus placeholder="Ask anything, '/' for slash commands"></div>
+                        <div id="context" class="context">
+                          <div class="header">Context</div>
+                          <ul id="attachments" class="file-list">
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </body>
+                </html>
+                """;
+
+        String js = loadJavaScripts();
+        String css = loadCss();
+        htmlTemplate = htmlTemplate.replace("${js}", js);
+        htmlTemplate = htmlTemplate.replace("${css}", css);
+
+        // Initialize the browser with base HTML and CSS
+        browser.setText(htmlTemplate);
+    }
+
     public void setMessageHtml(String messageId, String messageBody) {
-//        logger.info("setting messaage " + messageId + ":" + messageBody);
         uiSync.asyncExec(() -> {
             PromptParser parser = new PromptParser(messageBody);
             String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml()));
@@ -628,9 +591,7 @@ public class ChatViewPart {
             browser.execute(
                     "var element = document.getElementById(\"message-" + messageId + "\");"
                             + "element.innerHTML = '" + fixedHtml + "';"
-            // + "document.querySelectorAll('pre').forEach(el => { hljs.highlightElement(el);});"
                             + "hljs.highlightAll();"
-//                  + "hljs.highlightElement(document.getElementById(\"message-" + messageId + "\"));"
             );
             // Scroll down
             browser.execute("window.scrollTo(0, document.body.scrollHeight);");
@@ -652,25 +613,12 @@ public class ChatViewPart {
         });
     }
 
-//    public void addInputBlock(String messageId)
-//    {
-//        uiSync.asyncExec( () -> {
-//            // inject and highlight html message
-//            browser.execute( "document.getElementById(\"content\").innerHTML += '" + 
-//            "<div class=\"chat-bubble me\" contenteditable=\"true\" id=\"message-" + messageId + "\" "
-//            		+ "placeholder=\"Ask a follow-up\"></div>" + "';"
-//            		+ "addKeyCapture(document.getElementById(\"message-" + messageId + "\"));");
-//            // Scroll down
-//            browser.execute( "window.scrollTo(0, document.body.scrollHeight);" );
-//            browser.execute( "document.getElementById(\"message-" + messageId + "\").focus();" );
-//        } );
-//    }
     public void addInputBlock(String messageId) {
         uiSync.asyncExec(() -> {
             // inject and highlight html message
             browser.execute(
                     "document.getElementById(\"content\").innerHTML += '"
-                            + "<div class=\"chat-bubble me current\" contenteditable=\"true\" autofocus placeholder=\"Ask a follow-up\"></div>"
+                            + "<div class=\"chat-bubble me current\" contenteditable=\"plaintext-only\" autofocus placeholder=\"Ask a follow-up\"></div>"
                             + "<div id=\"context\" class=\"context\"><div class=\"header\">Context</div><ul id=\"attachments\" class=\"file-list\"></ul></div>"
                             + "';"
             );
