@@ -24,8 +24,6 @@ public class ChatMessage {
 
     public StringBuffer content;
 
-    public FunctionCall functionCall;
-
     private final List<Attachment> attachments;
 
     /**
@@ -66,14 +64,6 @@ public class ChatMessage {
      */
     public String getContent() {
         return content.toString();
-    }
-
-    public FunctionCall getFunctionCall() {
-        return functionCall;
-    }
-
-    public void setFunctionCall(FunctionCall functionCall) {
-        this.functionCall = functionCall;
     }
 
     /**

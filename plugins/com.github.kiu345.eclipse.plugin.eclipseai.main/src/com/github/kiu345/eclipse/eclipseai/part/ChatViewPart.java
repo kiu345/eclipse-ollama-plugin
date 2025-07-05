@@ -45,6 +45,9 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
@@ -101,7 +104,7 @@ public class ChatViewPart {
     private Composite imagesContainer;
 
     private List<ModelDescriptor> modelList;
-    
+
     private List<FileContentAttachment> fileAttachments = new LinkedList<Attachment.FileContentAttachment>();
 
     @SuppressWarnings("unused")
@@ -171,7 +174,7 @@ public class ChatViewPart {
 
         modelCombo = new Combo(controls, SWT.DROP_DOWN | SWT.READ_ONLY);
         withTemperature = addScaleField(controls, "Temperature");
-        withFunctionCalls = addCheckField( controls, "With Function Calls:");
+        withFunctionCalls = addCheckField(controls, "With Function Calls:");
 
         modelCombo.addSelectionListener(new SelectionListener() {
 
@@ -179,7 +182,7 @@ public class ChatViewPart {
             public void widgetSelected(SelectionEvent arg0) {
                 logger.info("Setting model to " + modelCombo.getText());
                 configuration.setSelectedModel(modelCombo.getText());
-                ModelDescriptor model =  httpClient.getModel(modelCombo.getText());
+                ModelDescriptor model = httpClient.getModel(modelCombo.getText());
                 withFunctionCalls.setEnabled(model.functionCalling());
             }
 
@@ -187,14 +190,14 @@ public class ChatViewPart {
             public void widgetDefaultSelected(SelectionEvent arg0) {
                 logger.info("Setting model to " + modelCombo.getText());
                 configuration.setSelectedModel(modelCombo.getText());
-                ModelDescriptor model =  httpClient.getModel(modelCombo.getText());
+                ModelDescriptor model = httpClient.getModel(modelCombo.getText());
                 withFunctionCalls.setEnabled(model.functionCalling());
             }
         });
 
         makeComboList();
 
-        modelCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, buttons.length-1, 1));
+        modelCombo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, buttons.length - 1, 1));
 
         withTemperature.addSelectionListener(new SelectionListener() {
 
@@ -214,13 +217,13 @@ public class ChatViewPart {
 
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                logger.info("Set function usage to "+withFunctionCalls.getSelection());
+                logger.info("Set function usage to " + withFunctionCalls.getSelection());
                 configuration.setUseFunctions(withFunctionCalls.getSelection());
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent arg0) {
-                logger.info("Set function usage to "+withFunctionCalls.getSelection());
+                logger.info("Set function usage to " + withFunctionCalls.getSelection());
                 configuration.setUseFunctions(withFunctionCalls.getSelection());
             }
         });
@@ -343,9 +346,9 @@ public class ChatViewPart {
                             FileEditorInput fileInput = (FileEditorInput) textEditor.getEditorInput();
                             IFile file = fileInput.getFile();
                             IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
-                            
+
                             FileContentAttachment fca = new FileContentAttachment(file.getProjectRelativePath().toPortableString(), 0, document.getNumberOfLines(), document.get());
-                            
+
                             if (!fileAttachments.contains(fca)) {
                                 fileAttachments.add(fca);
                                 logger.info(file.getName());
@@ -410,6 +413,31 @@ public class ChatViewPart {
         button.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                // Get the active workbench page
+                IWorkbench workbench = PlatformUI.getWorkbench();
+                IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
+
+                // Get all editor references
+                IEditorReference[] editorReferences = page.getEditorReferences();
+
+                // Iterate through editors
+                for (IEditorReference ref : editorReferences) {
+                    IEditorPart editor = ref.getEditor(false); // false to avoid blocking
+                    if (editor != null) {
+                        // Access editor details
+                        System.out.println("Editor ID: " + editor.getEditorInput().getName());
+                        System.out.println("Editor Title: " + editor.getTitle());
+                        System.out.println("Editor Class: " + editor.getClass());
+                        System.out.println("Editor Plugin: " + editor.getEditorSite().getPluginId());
+                    }
+                    else {
+                        System.out.println(
+                                "Inactive editor Title: " + ref.getName()
+                        );
+                        ref.getEditor(true);
+                    }
+                }
+
                 refreshArea();
             }
         });
@@ -564,7 +592,7 @@ public class ChatViewPart {
      *         files.
      */
     private String loadJavaScripts() {
-        String[] jsFiles = { "functions.js", "highlight.min.js","init.js" };
+        String[] jsFiles = { "functions.js", "highlight.min.js", "init.js" };
         StringBuilder js = new StringBuilder();
         for (String file : jsFiles) {
             try (InputStream in = FileLocator
@@ -585,13 +613,13 @@ public class ChatViewPart {
         uiSync.asyncExec(() -> {
             PromptParser parser = new PromptParser(messageBody);
             String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml()));
-            
+
             // inject and highlight html message
             browser.execute(
                     "var element = document.getElementById(\"message-" + messageId + "\");"
-                    + "element.innerHTML = '" + fixedHtml + "';"
-    //                + "document.querySelectorAll('pre').forEach(el => { hljs.highlightElement(el);});"
-                  + "hljs.highlightAll();"
+                            + "element.innerHTML = '" + fixedHtml + "';"
+            // + "document.querySelectorAll('pre').forEach(el => { hljs.highlightElement(el);});"
+                            + "hljs.highlightAll();"
 //                  + "hljs.highlightElement(document.getElementById(\"message-" + messageId + "\"));"
             );
             // Scroll down
@@ -721,34 +749,34 @@ public class ChatViewPart {
 
     public void setAttachments(List<Attachment> attachments) {
         /*
-        uiSync.asyncExec(() -> {
-            // Dispose of existing children to avoid memory leaks and remove old
-            // images
-            for (var child : imagesContainer.getChildren()) {
-                child.dispose();
-            }
-
-            imagesContainer.setLayout(new RowLayout(SWT.HORIZONTAL));
-
-            if (attachments.isEmpty()) {
-                scrolledComposite.setVisible(false);
-                ((GridData) scrolledComposite.getLayoutData()).heightHint = 0;
-            }
-            else {
-                AttachmentVisitor attachmentVisitor = new AttachmentVisitor();
-
-                // There are images to display, add them to the imagesContainer
-                for (var attachment : attachments) {
-                    attachment.accept(attachmentVisitor);
-                }
-                scrolledComposite.setVisible(true);
-                imagesContainer.setSize(imagesContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-                ((GridData) scrolledComposite.getLayoutData()).heightHint = SWT.DEFAULT;
-            }
-            // Refresh the layout
-            updateLayout(imagesContainer);
-        });
-        */
+         * uiSync.asyncExec(() -> {
+         * // Dispose of existing children to avoid memory leaks and remove old
+         * // images
+         * for (var child : imagesContainer.getChildren()) {
+         * child.dispose();
+         * }
+         * 
+         * imagesContainer.setLayout(new RowLayout(SWT.HORIZONTAL));
+         * 
+         * if (attachments.isEmpty()) {
+         * scrolledComposite.setVisible(false);
+         * ((GridData) scrolledComposite.getLayoutData()).heightHint = 0;
+         * }
+         * else {
+         * AttachmentVisitor attachmentVisitor = new AttachmentVisitor();
+         * 
+         * // There are images to display, add them to the imagesContainer
+         * for (var attachment : attachments) {
+         * attachment.accept(attachmentVisitor);
+         * }
+         * scrolledComposite.setVisible(true);
+         * imagesContainer.setSize(imagesContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+         * ((GridData) scrolledComposite.getLayoutData()).heightHint = SWT.DEFAULT;
+         * }
+         * // Refresh the layout
+         * updateLayout(imagesContainer);
+         * });
+         */
     }
 
     @SuppressWarnings("unused")
@@ -917,8 +945,8 @@ public class ChatViewPart {
             if (arguments.length > 0 && arguments[0] instanceof String) {
                 userPrompt = (String) arguments[0];
                 if (fileAttachments.size() != 0) {
-                    for (FileContentAttachment fca: fileAttachments) {
-                        userPrompt = userPrompt +"\n\n"+fca.toChatMessageContent();
+                    for (FileContentAttachment fca : fileAttachments) {
+                        userPrompt = userPrompt + "\n\n" + fca.toChatMessageContent();
                     }
                 }
 
