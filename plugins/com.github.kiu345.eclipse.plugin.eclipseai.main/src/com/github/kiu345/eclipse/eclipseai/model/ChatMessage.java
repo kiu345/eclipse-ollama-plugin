@@ -2,6 +2,7 @@ package com.github.kiu345.eclipse.eclipseai.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.github.kiu345.eclipse.eclipseai.part.Attachment;
 
@@ -16,7 +17,7 @@ public class ChatMessage {
     public static final String ROLE_USER = "user";
     
     
-    public final String id;
+    public final UUID id;
 
     public final String role;
 
@@ -35,11 +36,11 @@ public class ChatMessage {
      *             The role associated with the chat message (e.g., "user",
      *             "assistant")
      */
-    public ChatMessage(String id, String role) {
+    public ChatMessage(UUID id, String role) {
         this(id, null, role);
     }
 
-    public ChatMessage(String id, String name, String role) {
+    public ChatMessage(UUID id, String name, String role) {
         this.id = id;
         this.role = role;
         this.name = name;
@@ -91,7 +92,7 @@ public class ChatMessage {
      * 
      * @return The ID of the chat message
      */
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 

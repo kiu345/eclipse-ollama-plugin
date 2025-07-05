@@ -23,7 +23,7 @@ public class PrintToFileMessageSubscriber implements Flow.Subscriber<Incoming> {
     private ILog logger;
 
     private Path getFile() {
-        Path path = Paths.get(System.getProperty("user.home"), "assitai.log");
+        Path path = Paths.get(System.getProperty("user.home"), "eclipseai.log");
         return path;
     }
 

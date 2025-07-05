@@ -1,4 +1,4 @@
-package com.github.kiu345.eclipse.eclipseai.subscribers;
+package com.github.kiu345.eclipse.eclipseai.services;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Provider;
@@ -6,7 +6,8 @@ import jakarta.inject.Singleton;
 
 import org.eclipse.e4.core.di.annotations.Creatable;
 
-import com.github.kiu345.eclipse.eclipseai.services.AIStreamJavaHttpClient;
+import com.github.kiu345.eclipse.eclipseai.subscribers.AppendMessageToViewSubscriber;
+import com.github.kiu345.eclipse.eclipseai.subscribers.PrintMessageSubscriber;
 
 @Creatable
 @Singleton

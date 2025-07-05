@@ -3,36 +3,27 @@ package com.github.kiu345.eclipse.eclipseai.part;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.e4.ui.di.UISynchronize;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -52,7 +43,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
-import com.github.kiu345.eclipse.eclipseai.part.Attachment.UiVisitor;
 import com.github.kiu345.eclipse.eclipseai.part.dnd.DropManager;
 import com.github.kiu345.eclipse.eclipseai.prompt.InputParser;
 import com.github.kiu345.eclipse.eclipseai.prompt.PromptParser;
@@ -83,10 +73,6 @@ public class ChatViewPart {
     @Inject
     private ClientConfiguration configuration;
 
-    private LocalResourceManager resourceManager;
-
-//    private Text inputArea;
-
     private Combo modelCombo;
 
     @SuppressWarnings("unused")
@@ -96,8 +82,6 @@ public class ChatViewPart {
 
     @SuppressWarnings("unused")
     private ScrolledComposite scrolledComposite;
-
-    private Composite imagesContainer;
 
     private List<ModelDescriptor> modelList;
 
@@ -126,13 +110,9 @@ public class ChatViewPart {
 
     @PostConstruct
     public void createControls(Composite parent) {
-        resourceManager = new LocalResourceManager(JFaceResources.getResources());
-
-//        SashForm sashForm = new SashForm(parent, SWT.VERTICAL);
-//        sashForm.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         Composite aiArea = new Composite(parent, SWT.FILL);
         GridLayout layout = new GridLayout();
-        layout.numColumns = 1; // One column for vertical alignment
+        layout.numColumns = 1;
         aiArea.setLayout(layout);
 
         Composite browserContainer = new Composite(aiArea, SWT.FILL);
@@ -141,23 +121,12 @@ public class ChatViewPart {
 
         browser = createChatView(browserContainer);
 
-        // Create the JavaScript-to-Java callback
-//        new CopyCodeFunction(browser, "eclipseFunc");
-//        new SaveCodeFunction(browser, "eclipseFunc");
-
         Composite controls = new Composite(aiArea, SWT.NONE);
         controls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-//        Composite attachmentsPanel = createAttachmentsPanel(controls);
-//        inputArea = createUserInput(controls);
-        // create components
         Button[] buttons = { createAttachFileButton(controls), createClearChatButton(controls), createStopButton(controls), createRefreshButton(controls) };
 
-        // layout components
         controls.setLayout(new GridLayout(buttons.length, false));
-//        attachmentsPanel.setLayoutData(new GridData(SWT.FILL, SWT.PUSH, true, false, buttons.length, 1)); // Full width
-//        inputArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, buttons.length, 1)); // colspan = num of
-        // buttons
         for (var button : buttons) {
             button.setLayoutData(new GridData(SWT.FILL, SWT.RIGHT, true, false));
         }
@@ -228,10 +197,6 @@ public class ChatViewPart {
             logger.warn("failed to set function value: " + e.getMessage());
         }
 
-        // Sets the initial weight ratio: 75% browser, 25% controls
-//        aiArea.setWeights(new int[] { 80, 20 });
-
-        // Enable DnD for the controls below the chat view
         dropManager.registerDropTarget(controls);
 
         clearAttachments();
@@ -243,7 +208,6 @@ public class ChatViewPart {
         scale.setMaximum(10);
         scale.setIncrement(1);
         scale.setPageIncrement(1);
-//        addFormControl( scale, form, labelText);
         return scale;
     }
 
@@ -256,25 +220,6 @@ public class ChatViewPart {
     private Control addFormControl(Control control, Composite form, String labelText) {
         Label label = new Label(form, SWT.NONE);
         label.setText(labelText);
-//        FormData labelData = new FormData();
-        Control[] children = form.getChildren();
-        if (children.length == 2) {
-            // First control, so attach it to the top of the form
-//            labelData.top = new FormAttachment(0, 10);
-        }
-        else {
-            // Attach it below the last control
-//            Control lastControl = children[children.length - 3];
-//            labelData.top = new FormAttachment(lastControl, 10);
-        }
-//        labelData.left = new FormAttachment(0, 10);
-//        label.setLayoutData(labelData);
-
-//        FormData textData = new FormData();
-//        textData.left = new FormAttachment(0, 150);
-//        textData.right = new FormAttachment(100, -10);
-//        textData.top = new FormAttachment(label, -2, SWT.TOP);
-//        control.setLayoutData(textData);
         return control;
     }
 
@@ -305,24 +250,6 @@ public class ChatViewPart {
         return modelList;
     }
 
-//    private Composite createAttachmentsPanel(Composite parent) {
-//        Composite attachmentsPanel = new Composite(parent, SWT.NONE);
-//        attachmentsPanel.setLayout(new GridLayout(1, false)); // One column
-//
-//        scrolledComposite = new ScrolledComposite(attachmentsPanel, SWT.H_SCROLL);
-//        scrolledComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//        scrolledComposite.setExpandHorizontal(true);
-//        scrolledComposite.setExpandVertical(true);
-//
-//        imagesContainer = new Composite(scrolledComposite, SWT.NONE);
-//        imagesContainer.setLayout(new RowLayout(SWT.HORIZONTAL));
-//
-//        scrolledComposite.setContent(imagesContainer);
-//        scrolledComposite.setMinSize(imagesContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-//
-//        return attachmentsPanel;
-//    }
-//
     private Button createAttachFileButton(Composite parent) {
         Button button = new Button(parent, SWT.PUSH);
         button.setText("Attach");
@@ -389,7 +316,6 @@ public class ChatViewPart {
         Button button = new Button(parent, SWT.PUSH);
         button.setText("Stop");
 
-        // Use the built-in 'IMG_ELCL_STOP' icon
         Image stopIcon = PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ISharedImages.IMG_ELCL_STOP);
         button.setImage(stopIcon);
 
@@ -429,68 +355,6 @@ public class ChatViewPart {
         }
 
     }
-
-    /**
-     * Dynamically creates and assigns a custom context menu to the input area.
-     * <p>
-     * This method constructs a context menu with "Cut", "Copy", and "Paste" actions
-     * for the text input area. The "Paste" action is conditionally enabled based on
-     * the current content of the clipboard: it's enabled if the clipboard contains
-     * either text or image data. When triggered, the "Paste" action checks the
-     * clipboard content type and handles it accordingly - pasting text directly
-     * into the input area or invoking a custom handler for image data.
-     *
-     * @param inputArea The Text widget to which the custom context menu will be
-     *                  attached.
-     */
-//    private void createCustomMenu(Text inputArea) {
-//        Menu menu = new Menu(inputArea);
-//        inputArea.setMenu(menu);
-//        menu.addMenuListener(new MenuAdapter() {
-//            @Override
-//            public void menuShown(MenuEvent e) {
-//                // Dynamically adjust the context menu
-//                MenuItem[] items = menu.getItems();
-//                for (MenuItem item : items) {
-//                    item.dispose();
-//                }
-//                // Add Cut, Copy, Paste items
-//                addMenuItem(menu, "Cut", () -> inputArea.cut());
-//                addMenuItem(menu, "Copy", () -> inputArea.copy());
-//                MenuItem pasteItem = addMenuItem(menu, "Paste", () -> handlePasteOperation());
-//                // Enable or disable paste based on clipboard content
-//                Clipboard clipboard = new Clipboard(Display.getCurrent());
-//                boolean enablePaste = clipboard.getContents(TextTransfer.getInstance()) != null
-//                        || clipboard.getContents(ImageTransfer.getInstance()) != null;
-//                pasteItem.setEnabled(enablePaste);
-//                clipboard.dispose();
-//            }
-//        });
-//    }
-//
-//    private MenuItem addMenuItem(Menu parent, String text, Runnable action) {
-//        MenuItem item = new MenuItem(parent, SWT.NONE);
-//        item.setText(text);
-//        item.addListener(SWT.Selection, e -> action.run());
-//        return item;
-//    }
-//
-//    private void handlePasteOperation() {
-//        Clipboard clipboard = new Clipboard(Display.getCurrent());
-//
-//        if (clipboard.getContents(ImageTransfer.getInstance()) != null) {
-//            ImageData imageData = (ImageData) clipboard.getContents(ImageTransfer.getInstance());
-//            presenter.onAttachmentAdded(imageData);
-//        }
-//        else {
-//            String textData = (String) clipboard.getContents(TextTransfer.getInstance());
-//            if (textData != null) {
-//                inputArea.insert(textData); // Manually insert text at the
-//                                            // current caret position
-//            }
-//
-//        }
-//    }
 
     private Browser createChatView(Composite parent) {
         Browser browser = new Browser(parent, SWT.EDGE);
@@ -582,14 +446,14 @@ public class ChatViewPart {
         browser.setText(htmlTemplate);
     }
 
-    public void setMessageHtml(String messageId, String messageBody) {
+    public void setMessageHtml(UUID messageId, String messageBody) {
         uiSync.asyncExec(() -> {
             PromptParser parser = new PromptParser(messageBody);
-            String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml()));
+            String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml(messageId)));
 
             // inject and highlight html message
             browser.execute(
-                    "var element = document.getElementById(\"message-" + messageId + "\");"
+                    "var element = document.getElementById(\"message-" + messageId.toString() + "\");"
                             + "element.innerHTML = '" + fixedHtml + "';"
                             + "hljs.highlightAll();"
             );
@@ -598,14 +462,14 @@ public class ChatViewPart {
         });
     }
 
-    public void setInputHtml(String messageId, String messageBody) {
+    public void setInputHtml(UUID messageId, String messageBody) {
         uiSync.asyncExec(() -> {
             InputParser parser = new InputParser(messageBody);
 
             String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.removeLastBr(parser.parseToHtml())));
             // inject and highlight html message
             browser.execute(
-                    "var element = document.getElementById(\"message-" + messageId + "\");" + "element.innerHTML = '"
+                    "var element = document.getElementById(\"message-" + messageId.toString() + "\");" + "element.innerHTML = '"
                             + fixedHtml + "';" + "hljs.highlightElement(element.querySelector('pre code'));"
             );
             // Scroll down
@@ -613,7 +477,7 @@ public class ChatViewPart {
         });
     }
 
-    public void addInputBlock(String messageId) {
+    public void addInputBlock(UUID messageId) {
         uiSync.asyncExec(() -> {
             // inject and highlight html message
             browser.execute(
@@ -650,7 +514,7 @@ public class ChatViewPart {
         return html.replace("\"", "\\\"").replace("'", "\\'");
     }
 
-    public void appendMessage(String messageId, String role) {
+    public void appendMessage(UUID uuid, String role) {
         String cssClass = "user".equals(role) ? "chat-bubble me" : "chat-bubble you";
         uiSync.asyncExec(() -> {
             browser.execute("""
@@ -658,7 +522,7 @@ public class ChatViewPart {
                     node.setAttribute("id", "message-${id}");
                     node.setAttribute("class", "${cssClass}");
                     document.getElementById("content").appendChild(node);
-                        """.replace("${id}", messageId).replace("${cssClass}", cssClass));
+                        """.replace("${id}", uuid.toString()).replace("${cssClass}", cssClass));
             browser.execute(
                     // Scroll down
                     "window.scrollTo(0, document.body.scrollHeight);"
@@ -666,7 +530,7 @@ public class ChatViewPart {
         });
     }
 
-    public void insertInputMessageBlock(String messageId, String role) {
+    public void insertInputMessageBlock(UUID uuid, String role) {
         //
         String cssClass = "chat-bubble inline";
         uiSync.asyncExec(() -> {
@@ -677,7 +541,7 @@ public class ChatViewPart {
                     node.setAttribute("id", "message-${id}");
                     node.setAttribute("class", "${cssClass}");
                     parent.parentNode.insertBefore(node, parent);
-                    """.replace("${id}", messageId).replace("${cssClass}", cssClass));
+                    """.replace("${id}", uuid.toString()).replace("${cssClass}", cssClass));
             browser.execute(
                     // Scroll down
                     "window.scrollTo(0, document.body.scrollHeight);"
@@ -735,90 +599,6 @@ public class ChatViewPart {
          * updateLayout(imagesContainer);
          * });
          */
-    }
-
-    @SuppressWarnings("unused")
-    private class AttachmentVisitor implements UiVisitor {
-        private Label imageLabel;
-
-        @Override
-        public void add(ImageData preview, String caption) {
-            imageLabel = new Label(imagesContainer, SWT.NONE);
-            // initially nothing is selected
-            imageLabel.setData("selected", false);
-            imageLabel.setToolTipText(caption);
-
-            ImageDescriptor imageDescriptor;
-            try {
-                imageDescriptor = Optional.ofNullable(preview)
-                        .map(id -> ImageDescriptor.createFromImageDataProvider(zoom -> id))
-                        .orElse(
-                                ImageDescriptor
-                                        .createFromURL(URI.create("platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/icons/folder.png").toURL())
-                        );
-            }
-            catch (MalformedURLException e) {
-                throw new IllegalStateException(e);
-            }
-
-            Image scaledImage = resourceManager.createImageWithDefault(imageDescriptor);
-            Image selectedImage = createSelectedImage(scaledImage);
-
-            imageLabel.setImage(scaledImage);
-
-            imageLabel.addDisposeListener(l -> {
-                resourceManager.destroy(imageDescriptor);
-                selectedImage.dispose();
-            });
-
-            // Add mouse listener to handle selection
-            imageLabel.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseUp(MouseEvent e) {
-                    boolean isSelected = (boolean) imageLabel.getData("selected");
-                    imageLabel.setData("selected", !isSelected);
-
-                    if (isSelected) {
-                        imageLabel.setImage(scaledImage);
-                    }
-                    else {
-                        // If it was not selected, apply an overlay
-                        Image selectedImage = createSelectedImage(scaledImage);
-                        imageLabel.setImage(selectedImage);
-                        // Dispose the tinted image when the label is
-                        // disposed
-                        imageLabel.addDisposeListener(l -> selectedImage.dispose());
-                    }
-                    imagesContainer.layout();
-                }
-            });
-        }
-    }
-
-    private Image createSelectedImage(Image originalImage) {
-        // Create a new image that is a copy of the original
-        Image tintedImage = new Image(Display.getCurrent(), originalImage.getBounds());
-
-        // Create a GC to draw on the tintedImage
-        GC gc = new GC(tintedImage);
-
-        // Draw the original image onto the new image
-        gc.drawImage(originalImage, 0, 0);
-
-        // Set alpha value for the overlay (128 is half-transparent)
-        gc.setAlpha(128);
-
-        // Get the system selection color
-        Color selectionColor = Display.getCurrent().getSystemColor(SWT.COLOR_LIST_SELECTION);
-
-        // Fill the image with the selection color overlay
-        gc.setBackground(selectionColor);
-        gc.fillRectangle(tintedImage.getBounds());
-
-        // Dispose the GC to free up system resources
-        gc.dispose();
-
-        return tintedImage;
     }
 
     public void updateLayout(Composite composite) {

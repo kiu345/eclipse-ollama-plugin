@@ -2,31 +2,20 @@ package com.github.kiu345.eclipse.eclipseai.services;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.e4.core.di.annotations.Creatable;
-import org.eclipse.jface.preference.IPreferenceStore;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.kiu345.eclipse.eclipseai.Activator;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.model.Incoming;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
-import com.github.kiu345.eclipse.eclipseai.part.Attachment;
-import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService.ToolInfo;
-import com.github.kiu345.eclipse.eclipseai.tools.ImageUtilities;
 
 import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.data.message.AiMessage;
@@ -47,11 +36,8 @@ import jakarta.inject.Inject;
 @Creatable
 public class AIStreamJavaHttpClient {
     interface Assistant {
-
         String chat(String message);
     }
-
-    private static final String CHAT_API_PATH = "/chat";
 
     private SubmissionPublisher<Incoming> publisher;
 
@@ -66,14 +52,9 @@ public class AIStreamJavaHttpClient {
     @Inject
     private ToolService toolService;
 
-    private IPreferenceStore preferenceStore;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     public AIStreamJavaHttpClient() {
 
         publisher = new SubmissionPublisher<>();
-        preferenceStore = Activator.getDefault().getPreferenceStore();
     }
 
     public void setCancelProvider(Supplier<Boolean> isCancelled) {
@@ -89,89 +70,6 @@ public class AIStreamJavaHttpClient {
         publisher.subscribe(subscriber);
     }
 
-    /**
-     * Returns the JSON request body as a String for the given prompt.
-     * 
-     * @param prompt the user input to be included in the request body
-     * @return the JSON request body as a String
-     */
-    private String getRequestBody(Conversation prompt, ModelDescriptor model) {
-        try {
-
-            var requestBody = new LinkedHashMap<String, Object>();
-            var messages = new ArrayList<Map<String, Object>>();
-
-            var systemMessage = new LinkedHashMap<String, Object>();
-            systemMessage.put("role", "system");
-            systemMessage.put("content", preferenceStore.getString(Prompts.SYSTEM.preferenceName()));
-            messages.add(systemMessage);
-
-            prompt.messages().stream().forEach(e -> e.setContent(e.getContent().trim()));
-
-            prompt.messages().stream().filter(e -> !e.getContent().isBlank()).map(message -> toJsonPayload(message, model)).forEach(messages::add);
-
-            requestBody.put("model", model.model());
-            requestBody.put("messages", messages);
-
-            float temperature = configuration.getTemperature().orElse(5);
-            requestBody.put("temperature", temperature / 10f);
-            requestBody.put("stream", true);
-
-            String jsonString;
-            jsonString = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(requestBody);
-            return jsonString;
-        }
-        catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private LinkedHashMap<String, Object> toJsonPayload(ChatMessage message, ModelDescriptor model) {
-        try {
-            var userMessage = new LinkedHashMap<String, Object>();
-            userMessage.put("role", message.getRole());
-            if (model.functionCalling() && false) {
-                // function call results
-                if (Objects.nonNull(message.getName())) {
-                    userMessage.put("name", message.getName());
-                }
-            }
-
-            // assemble text content
-            List<String> textParts = message.getAttachments()
-                    .stream()
-                    .map(Attachment::toChatMessageContent)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-            String textContent = String.join("\n", textParts) + "\n\n" + message.getContent();
-
-            // add image content
-            if (model.vision() && false) {
-                var content = new ArrayList<>();
-                var textObject = new LinkedHashMap<String, String>();
-                textObject.put("type", "text");
-                textObject.put("text", textContent);
-                content.add(textObject);
-                message.getAttachments()
-                        .stream()
-                        .map(Attachment::getImageData)
-                        .filter(Objects::nonNull)
-                        .map(ImageUtilities::toBase64Jpeg)
-                        .map(this::toImageUrl)
-                        .forEachOrdered(content::add);
-                userMessage.put("content", content);
-            }
-            else // legacy API - just put content as text
-            {
-                userMessage.put("content", textContent);
-            }
-            return userMessage;
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     private dev.langchain4j.data.message.ChatMessage toChatMessage(ChatMessage message) {
         switch (message.role) {
             case ChatMessage.ROLE_SYSTEM:
@@ -181,26 +79,6 @@ public class AIStreamJavaHttpClient {
             default:
                 return new UserMessage(message.getContent());
         }
-    }
-
-    /**
-     * Converts a base64-encoded image data string into a structured JSON object suitable for API transmission.
-     * <p>
-     * This method constructs a JSON object that encapsulates the image data in a format expected by the API.
-     * The 'image_url' key is an object containing a 'url' key, which holds the base64-encoded image data prefixed
-     * with the appropriate data URI scheme.
-     *
-     * @param data the base64-encoded string of the image data
-     * @return a LinkedHashMap where the key 'type' is set to 'image_url', and 'image_url' is another LinkedHashMap
-     *         containing the 'url' key with the full data URI of the image.
-     */
-    private LinkedHashMap<String, Object> toImageUrl(String data) {
-        var imageObject = new LinkedHashMap<String, Object>();
-        imageObject.put("type", "image_url");
-        var urlObject = new LinkedHashMap<String, String>();
-        urlObject.put("url", "data:image/jpeg;base64," + data);
-        imageObject.put("image_url", urlObject);
-        return imageObject;
     }
 
     private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption, boolean withFunctions) {
@@ -243,6 +121,10 @@ public class AIStreamJavaHttpClient {
             logger.info("Received response of type " + response.aiMessage().type().name());
 //            response.aiMessage().toolExecutionRequests().getFirst().
             while (response.aiMessage().hasToolExecutionRequests()) {
+                if (isCancelled.get()) {
+                    logger.info("Canceling");
+                    break;
+                }
                 logger.info("Tool exec request detected");
                 AiMessage aiMessage = response.aiMessage();
 
@@ -252,6 +134,10 @@ public class AIStreamJavaHttpClient {
                 
                 List<ToolInfo> tools = toolService.findTools();
                 for (ToolExecutionRequest execRequest : response.aiMessage().toolExecutionRequests()) {
+                    if (isCancelled.get()) {
+                        logger.info("Canceling");
+                        break;
+                    }
                     String toolResultValue = "";
                     
                     try {
@@ -287,64 +173,6 @@ public class AIStreamJavaHttpClient {
                     break;
             }
             publisher.close();
-
-//            String answer = assistant.chat("Hi");
-//            publisher.submit(new Incoming(Incoming.Type.CONTENT, answer));
-
-            /*
-             * final OllamaStreamingChatModel chatModel = new OllamaAdapter(configuration).getChat(model.model());
-             * chatModel.doChat(createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), model), new StreamingChatResponseHandler() {
-             * private StringBuilder builder = new StringBuilder();
-             * 
-             * 
-             * @Override
-             * public void onPartialResponse(String partialResponse) {
-             * builder.append(partialResponse);
-             * }
-             * 
-             * @Override
-             * public void onCompleteResponse(ChatResponse completeResponse) {
-             * ChatMessageType type = completeResponse.aiMessage().type();
-             * logger.info(type.name());
-             * switch (type) {
-             * case AI: {
-             * for (ToolExecutionRequest execRequest: completeResponse.aiMessage().toolExecutionRequests()) {
-             * }
-             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
-             * break;
-             * }
-             * case CUSTOM: {
-             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
-             * break;
-             * }
-             * case SYSTEM: {
-             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
-             * break;
-             * }
-             * case TOOL_EXECUTION_RESULT: {
-             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
-             * break;
-             * }
-             * case USER: {
-             * publisher.submit(new Incoming(Incoming.Type.CONTENT, completeResponse.aiMessage().text()));
-             * break;
-             * }
-             * default:
-             * throw new IllegalArgumentException("Unexpected value: " + type);
-             * }
-             * publisher.close();
-             * logger.info(completeResponse.finishReason().name());
-             * }
-             * 
-             * @Override
-             * public void onError(Throwable error) {
-             * logger.error(error.getMessage(), error);
-             * publisher.closeExceptionally(error);
-             * }
-             * 
-             * });
-             * 
-             */
         };
     }
 

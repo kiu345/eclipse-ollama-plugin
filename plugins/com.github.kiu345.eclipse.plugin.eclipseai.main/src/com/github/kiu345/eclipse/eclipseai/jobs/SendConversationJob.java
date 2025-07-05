@@ -10,7 +10,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.e4.core.di.annotations.Creatable;
 
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
-import com.github.kiu345.eclipse.eclipseai.subscribers.OllamaHttpClientProvider;
+import com.github.kiu345.eclipse.eclipseai.services.OllamaHttpClientProvider;
 
 import jakarta.inject.Inject;
 
