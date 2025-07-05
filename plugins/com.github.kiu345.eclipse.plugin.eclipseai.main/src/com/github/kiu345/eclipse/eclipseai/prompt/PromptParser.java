@@ -33,6 +33,8 @@ public class PromptParser {
     private static final String END_THINK = "</think>";
 
     private String prompt;
+    private Pattern codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
+    private Pattern functionCallPattern = Pattern.compile("^\"function_call\".*");
 
     public PromptParser(String prompt) {
         this.prompt = prompt;
@@ -67,8 +69,6 @@ public class PromptParser {
 
         try (var scanner = new Scanner(prompt)) {
             scanner.useDelimiter("\n");
-            var codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
-            var functionCallPattern = Pattern.compile("^\"function_call\".*");
             StringBuilder textBuffer = new StringBuilder();
             while (scanner.hasNext()) {
                 var line = scanner.next();
@@ -103,7 +103,7 @@ public class PromptParser {
                 }
             }
             if (!textBuffer.isEmpty()) {
-                handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                handleNonCodeBlock(out, textBuffer.toString(), false);
             }
         }
         return out.toString();
@@ -137,7 +137,6 @@ public class PromptParser {
 
     private void handleNonCodeBlock(StringBuilder out, String line, boolean lastLine) {
         if ((state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) {
-
             out.append(StringEscapeUtils.escapeHtml4(escapeBackSlashes(line)));
         }
         else if ((state & TEXT_ATTACHMENT_STATE) == TEXT_ATTACHMENT_STATE) {
@@ -145,7 +144,7 @@ public class PromptParser {
             return;
         }
         else {
-            out.append(markdown(StringEscapeUtils.escapeHtml4(line)));
+            out.append(markdown(line));
         }
 
         if (lastLine && (state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) // close opened code blocks

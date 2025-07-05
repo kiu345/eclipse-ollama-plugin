@@ -256,6 +256,10 @@ public class AIStreamJavaHttpClient {
                     
                     try {
                         toolResultValue = toolService.executeTool(tools, execRequest);
+                        if (toolResultValue == null) {
+                            logger.warn("Tool returned null");
+                            toolResultValue = "";
+                        }
                     }
                     catch (IOException e) {
                         logger.warn(e.getMessage(), e);
