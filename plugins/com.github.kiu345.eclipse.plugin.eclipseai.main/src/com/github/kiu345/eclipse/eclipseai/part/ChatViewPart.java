@@ -174,7 +174,7 @@ public class ChatViewPart {
 
         modelCombo = new Combo(controls, SWT.DROP_DOWN | SWT.READ_ONLY);
         withTemperature = addScaleField(controls, "Temperature");
-        withFunctionCalls = addCheckField(controls, "With Function Calls:");
+        withFunctionCalls = addCheckField(controls, "with Function Calls");
 
         modelCombo.addSelectionListener(new SelectionListener() {
 
@@ -227,6 +227,16 @@ public class ChatViewPart {
                 configuration.setUseFunctions(withFunctionCalls.getSelection());
             }
         });
+
+        try {
+            ModelDescriptor model = httpClient.getModel(modelCombo.getText());
+            boolean supportFunctions = (model == null ? false : model.functionCalling());
+            withFunctionCalls.setEnabled(supportFunctions);
+            withFunctionCalls.setSelection(configuration.getUseFunctions().orElse(false) && supportFunctions);
+        }
+        catch (Exception e) {
+            logger.warn("failed to set function value: " + e.getMessage());
+        }
 
         // Sets the initial weight ratio: 75% browser, 25% controls
 //        aiArea.setWeights(new int[] { 80, 20 });
