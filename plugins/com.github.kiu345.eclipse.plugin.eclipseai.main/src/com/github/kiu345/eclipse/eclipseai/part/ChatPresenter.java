@@ -28,15 +28,12 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 
 import com.github.kiu345.eclipse.eclipseai.Activator;
-import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
-import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.handlers.EclipseAIHandlerInvoker;
 import com.github.kiu345.eclipse.eclipseai.jobs.EclipseAIJobConstants;
 import com.github.kiu345.eclipse.eclipseai.jobs.SendConversationJob;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
-import com.github.kiu345.eclipse.eclipseai.preferences.AIType;
 import com.github.kiu345.eclipse.eclipseai.preferences.PreferenceConstants;
 import com.github.kiu345.eclipse.eclipseai.prompt.ChatMessageFactory;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
@@ -77,9 +74,6 @@ public class ChatPresenter {
 
     private static final String LAST_SELECTED_DIR_KEY = "lastSelectedDirectory";
 
-    private ChatAdapter chatAdapter;
-
-    // Preference node for your plugin
     private Preferences preferences = InstanceScope.INSTANCE.getNode("com.github.kiu345.eclipse.eclipseai");
 
     private ClientConfiguration configuration;
@@ -90,19 +84,6 @@ public class ChatPresenter {
     public void init() {
         appendMessageToViewSubscriber.setPresenter(this);
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(propChangeListener);
-        initChatAdapter();
-    }
-
-    private void initChatAdapter() {
-        String aiTypeName = preferences.get(PreferenceConstants.ECLIPSEAI_PROVIDER, AIType.OLLAMA.name());
-        AIType aiType = AIType.valueOf(aiTypeName);
-        switch (aiType) {
-            case OLLAMA:
-                chatAdapter = new OllamaAdapter(configuration);
-                break;
-            default:
-                logger.error("Unknown AI type:" + aiTypeName);
-        }
     }
 
     public void onClear() {
@@ -115,7 +96,6 @@ public class ChatPresenter {
         attachments.clear();
         partAccessor.findMessageView().ifPresent(view -> {
             view.clearChatView();
-//            view.clearUserInput();
             view.clearAttachments();
         });
     }
@@ -128,14 +108,6 @@ public class ChatPresenter {
         logger.info("Send user message");
         ChatMessage message = createUserMessage(text);
         conversation.add(message);
-//        partAccessor.findMessageView().ifPresent(part -> {
-//            part.clearUserInput();
-//            part.clearAttachments();
-//            part.appendMessage(message.getId(), message.getRole());
-//            String content = ChatMessageUtilities.toMarkdownContent(message);
-//            part.setMessageHtml(message.getId(), content);
-//            attachments.clear();
-//        });
         sendConversationJobProvider.get().schedule();
     }
 
@@ -150,7 +122,6 @@ public class ChatPresenter {
         conversation.add(message);
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.appendMessage(message.getId(), message.getRole());
-//            messageView.setInputEnabled(false);
         });
         return message;
     }
@@ -186,11 +157,10 @@ public class ChatPresenter {
     }
 
     public void endMessageFromAssistant() {
-        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"true\"></div>");
+        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"plaintext-only\"></div>");
         conversation.add(message);
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.addInputBlock(message.getId());
-//            messageView.setInputEnabled( true );
         });
     }
 
@@ -199,7 +169,8 @@ public class ChatPresenter {
      */
     public void onStop() {
         var jobs = jobManager.find(null);
-        Arrays.stream(jobs).filter(job -> job.getName().startsWith(EclipseAIJobConstants.JOB_PREFIX))
+        Arrays.stream(jobs)
+                .filter(job -> job.getName().startsWith(EclipseAIJobConstants.JOB_PREFIX))
                 .forEach(Job::cancel);
 
         partAccessor.findMessageView().ifPresent(messageView -> {
@@ -305,19 +276,10 @@ public class ChatPresenter {
                 PreferenceConstants.ECLIPSEAI_API_BASE_PATH.equals(e.getProperty()) ||
                 PreferenceConstants.ECLIPSEAI_GET_MODEL_API_PATH.equals(e.getProperty()) ||
                 PreferenceConstants.ECLIPSEAI_API_KEY.equals(e.getProperty())) {
-            initChatAdapter();
             partAccessor.findMessageView().ifPresent(view -> {
                 view.makeComboList();
             });
         }
-//        if (PreferenceConstants.ECLIPSEAI_BASE_URL.equals(e.getProperty()) ||
-//                PreferenceConstants.ECLIPSEAI_GET_MODEL_API_PATH.equals(e.getProperty()) ||
-//                PreferenceConstants.ECLIPSEAI_API_BASE_PATH.equals(e.getProperty()) ||
-//                PreferenceConstants.ECLIPSEAI_API_KEY.equals(e.getProperty())) {
-//            partAccessor.findMessageView().ifPresent(view -> {
-//                view.makeComboList();
-//            });
-//        }
     };
 
 }

@@ -32,7 +32,7 @@ public class ChatMessageFactory {
     }
 
     public ChatMessage createAssistantChatMessage(String text) {
-        ChatMessage message = new ChatMessage(UUID.randomUUID().toString(), ChatMessage.ROLE_AI);
+        ChatMessage message = new ChatMessage(UUID.randomUUID(), ChatMessage.ROLE_AI);
         message.setContent(text);
         return message;
 
@@ -110,7 +110,7 @@ public class ChatMessageFactory {
     }
 
     public ChatMessage createUserChatMessage(Supplier<String> promptSupplier) {
-        ChatMessage message = new ChatMessage(UUID.randomUUID().toString(), ChatMessage.ROLE_USER);
+        ChatMessage message = new ChatMessage(UUID.randomUUID(), ChatMessage.ROLE_USER);
         message.setContent(promptSupplier.get());
         return message;
     }
