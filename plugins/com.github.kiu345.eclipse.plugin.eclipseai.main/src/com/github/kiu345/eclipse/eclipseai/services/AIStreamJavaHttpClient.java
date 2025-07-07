@@ -75,7 +75,7 @@ public class AIStreamJavaHttpClient {
         @Override
         public void onPartialResponse(String partialResponse) {
             if (partialResponse != null) {
-                System.out.print(partialResponse);
+//                System.out.print(partialResponse);
                 storage.append(partialResponse);
             }
             if (isCancelled.get()) {
@@ -167,15 +167,14 @@ public class AIStreamJavaHttpClient {
 
                 switch (response.aiMessage().type()) {
                     case AI:
-                        logger.info(getBuffer());
-                        publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer()+"\n..."));
+                        publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer() + "\n..."));
                         break;
                     case SYSTEM:
-                        publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer()+"\n..."));
+                        publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer() + "\n..."));
                         break;
                     default:
-                        logger.info("unknown message type received, using as chat message: "+response.aiMessage().type());
-                        publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer()+"\n..."));
+                        logger.info("unknown message type received, using as chat message: " + response.aiMessage().type());
+                        publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer() + "\n..."));
                         break;
                 }
 
@@ -187,7 +186,6 @@ public class AIStreamJavaHttpClient {
                 if (response.aiMessage() != null) {
                     switch (response.aiMessage().type()) {
                         case AI:
-                            logger.info(getBuffer());
                             publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer()));
                             break;
                         case SYSTEM:

@@ -79,7 +79,7 @@ public class SimpleAITools {
         return "";
     }
 
-    @Tool("Returns file content of the editor")
+    @Tool("Returns file content of the editor with the specified name")
     public String editorContent(@P(required = true, value = "The editor name") String name) {
         IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
         for (IWorkbenchWindow window : windows) {
@@ -111,9 +111,9 @@ public class SimpleAITools {
     @Tool("Opens a new compare editor which shows to text elements to each other. Input needs to be well formatted with whitespaces and newlines.")
     public void showCompareView(
             @P(required = true, value = "The title text of the left side") String leftTitle,
-            @P(required = true, value = "The text content on the left side. Needs to be the full content, do NOT use segments.") String leftBlock,
+            @P(required = true, value = "The complete text content on the left side. Needs to be the full content, do NOT use segments.") String leftCode,
             @P(required = true, value = "The title text of on the right side") String rightTitle,
-            @P(required = true, value = "The text content on the right side. Needs to be the full content, do NOT use segments.") String rightBlock
+            @P(required = true, value = "The complete text content on the right side. Needs to be the full content, do NOT use segments.") String rightCode
     ) {
         IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
         if (windows.length == 0) {
@@ -135,8 +135,8 @@ public class SimpleAITools {
             @Override
             protected Object prepareInput(IProgressMonitor monitor) {
                 return new DiffNode(
-                        new TextCompareInput(leftBlock),
-                        new TextCompareInput(rightBlock)
+                        new TextCompareInput(leftCode),
+                        new TextCompareInput(rightCode)
                 );
             }
 
