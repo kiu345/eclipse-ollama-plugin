@@ -25,7 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 
-import com.github.kiu345.eclipse.eclipseai.tools.TextCompareInput;
+import com.github.kiu345.eclipse.eclipseai.util.TextCompareInput;
 
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
