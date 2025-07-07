@@ -90,11 +90,9 @@ public class ToolService {
                 try {
                     Object result = executeTool(tool, request.arguments());
                     if (result == null) {
-                        log.warn("tool returned null value");
                         return "{\"result\": \"OK\"}";
                     }
                     if (result instanceof String val) {
-                        log.info("tool returned string value");
                         return val;
                     }
                     ObjectMapper mapper = new ObjectMapper();
@@ -109,7 +107,6 @@ public class ToolService {
     }
 
     private Object executeTool(ToolInfo tool, String arguments) throws IOException, ReflectiveOperationException {
-        log.info("tool found: "+tool.getTool().name()+" with "+arguments);
         Map<String, Object> params = argumentsAsMap(arguments);
         
         Object serviceObj = tool.method.getDeclaringClass().getDeclaredConstructor().newInstance();
