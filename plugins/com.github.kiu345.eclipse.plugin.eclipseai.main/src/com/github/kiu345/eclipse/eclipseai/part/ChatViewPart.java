@@ -41,6 +41,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 
+import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
 import com.github.kiu345.eclipse.eclipseai.part.dnd.DropManager;
@@ -446,10 +447,17 @@ public class ChatViewPart {
         browser.setText(htmlTemplate);
     }
 
-    public void setMessageHtml(UUID messageId, String messageBody) {
+    public void setMessageHtml(UUID messageId, String messageBody, ChatMessage.Type type) {
         uiSync.asyncExec(() -> {
             PromptParser parser = new PromptParser(messageBody);
             String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml(messageId)));
+            switch (type) {
+                case ERROR:
+                    fixedHtml = "<div style=\"background-color: #FFCCCC;\"><p><b>ERROR:</b></p>"+fixedHtml+"</div>";
+                    break;
+                default:
+                    ;
+            }
             // inject and highlight html message
             browser.execute(
                     """
