@@ -11,11 +11,16 @@ import com.github.kiu345.eclipse.eclipseai.part.Attachment;
  * content.
  */
 public class ChatMessage {
-
+    
+    public static enum Type {
+        MESSAGE,
+        ERROR,
+        SYSTEM
+    }
+    
     public static final String ROLE_SYSTEM = "system";
     public static final String ROLE_AI = "assistant";
     public static final String ROLE_USER = "user";
-    
     
     public final UUID id;
 

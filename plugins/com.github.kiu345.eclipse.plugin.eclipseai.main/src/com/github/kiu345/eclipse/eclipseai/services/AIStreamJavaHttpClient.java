@@ -206,8 +206,10 @@ public class AIStreamJavaHttpClient {
 
         @Override
         public void onError(Throwable error) {
-            logger.error(error.getMessage());
+            logger.error(error.getMessage(), error);
+            publisher.submit(new Incoming(Incoming.Type.ERROR, error.getMessage()));
             this.error = error;
+            publisher.close();
         }
 
     }

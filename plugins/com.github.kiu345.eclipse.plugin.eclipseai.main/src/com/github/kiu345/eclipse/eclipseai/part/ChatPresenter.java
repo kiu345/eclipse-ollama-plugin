@@ -32,6 +32,7 @@ import com.github.kiu345.eclipse.eclipseai.handlers.EclipseAIHandlerInvoker;
 import com.github.kiu345.eclipse.eclipseai.jobs.EclipseAIJobConstants;
 import com.github.kiu345.eclipse.eclipseai.jobs.SendConversationJob;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
+import com.github.kiu345.eclipse.eclipseai.model.ChatMessage.Type;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
 import com.github.kiu345.eclipse.eclipseai.preferences.PreferenceConstants;
@@ -85,6 +86,12 @@ public class ChatPresenter {
         appendMessageToViewSubscriber.setPresenter(this);
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(propChangeListener);
     }
+    
+    public void onError(ChatMessage message) {
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.setMessageHtml(message.getId(), message.getContent(), Type.ERROR);
+        });
+    }
 
     private ChatMessage createUserMessage(String userMessage) {
         ChatMessage message = chatMessageFactory.createUserChatMessage(() -> userMessage);
@@ -103,7 +110,7 @@ public class ChatPresenter {
 
     public void updateMessageFromAssistant(ChatMessage message) {
         partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.setMessageHtml(message.getId(), message.getContent());
+            messageView.setMessageHtml(message.getId(), message.getContent(), Type.MESSAGE);
         });
     }
 
@@ -202,7 +209,7 @@ public class ChatPresenter {
         // update view
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.appendMessage(message.getId(), message.getRole());
-            messageView.setMessageHtml(message.getId(), type.getDescription());
+            messageView.setMessageHtml(message.getId(), type.getDescription(), Type.MESSAGE);
         });
 
         // schedule message
