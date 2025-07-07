@@ -29,6 +29,7 @@ public class ModelPreferencePage extends FieldEditorPreferencePage implements IW
     private StringFieldEditor apiKeyEditor;
     private IntegerFieldEditor connectTimeoutEditor;
     private IntegerFieldEditor requestTimeoutEditor;
+    private IntegerFieldEditor keepAliveEditor;
 
     private UISynchronize uiSync;
     private IPropertyChangeListener modelListener = e -> {
@@ -66,6 +67,7 @@ public class ModelPreferencePage extends FieldEditorPreferencePage implements IW
         apiKeyEditor = new StringFieldEditor(PreferenceConstants.ECLIPSEAI_API_KEY, "API Key:", getFieldEditorParent());
         connectTimeoutEditor = new IntegerFieldEditor(PreferenceConstants.ECLIPSEAI_CONNECTION_TIMEOUT_SECONDS, "Connect timeout:", getFieldEditorParent());
         requestTimeoutEditor = new IntegerFieldEditor(PreferenceConstants.ECLIPSEAI_REQUEST_TIMEOUT_SECONDS, "Request timeout:", getFieldEditorParent());
+        keepAliveEditor = new IntegerFieldEditor(PreferenceConstants.ECLIPSEAI_KEEPALIVE_SECONDS, "Model KeepAlive time:", getFieldEditorParent());
 
         addField(modelSelector);
         addField(urlBaseEditor);
@@ -75,6 +77,7 @@ public class ModelPreferencePage extends FieldEditorPreferencePage implements IW
 
         addField(connectTimeoutEditor);
         addField(requestTimeoutEditor);
+        addField(keepAliveEditor);
     }
 
     /*

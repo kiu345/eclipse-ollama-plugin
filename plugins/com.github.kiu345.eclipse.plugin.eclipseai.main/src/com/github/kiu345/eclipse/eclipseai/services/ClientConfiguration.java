@@ -3,6 +3,7 @@ package com.github.kiu345.eclipse.eclipseai.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.e4.core.di.annotations.Creatable;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -87,6 +88,15 @@ public class ClientConfiguration {
     public int getRequestTimoutSeconds() {
         IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
         return Integer.parseInt(prefernceStore.getString(PreferenceConstants.ECLIPSEAI_REQUEST_TIMEOUT_SECONDS));
+    }
+
+    public Integer getKeepAliveSeconds() {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        String value = prefernceStore.getString(PreferenceConstants.ECLIPSEAI_KEEPALIVE_SECONDS);
+        if (StringUtils.isBlank(value)) {
+            return null;
+        }
+        return Integer.parseInt(value);
     }
 
     public Optional<String> getConversationId() {
