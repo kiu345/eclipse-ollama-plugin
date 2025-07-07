@@ -5,9 +5,18 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 
+import org.eclipse.compare.CompareConfiguration;
+import org.eclipse.compare.CompareEditorInput;
+import org.eclipse.compare.CompareUI;
+import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
+import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -15,6 +24,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+
+import com.github.kiu345.eclipse.eclipseai.tools.TextCompareInput;
 
 import dev.langchain4j.agent.tool.P;
 import dev.langchain4j.agent.tool.Tool;
@@ -24,10 +35,10 @@ public class SimpleAITools {
     @Inject
     private ILog log;
 
-    @Tool("Returns the current date and time")
+    @Tool("Returns the current local date and time")
     public String dateAndTime() {
         System.out.println("SimpleAITools.dateAndTime()");
-        return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT).format(LocalDateTime.now());
+        return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).format(LocalDateTime.now());
     }
 
     @Tool("Returns the files that are opened in the IDE")
@@ -96,4 +107,53 @@ public class SimpleAITools {
         }
         return null;
     }
+
+    @Tool("Returns file content of the editor")
+    public void showCompareView(
+            @P(required = true, value = "The title text of the left side") String leftTitle,
+            @P(required = true, value = "The text content on the left side") String leftBlock,
+            @P(required = true, value = "The title text of on the right side") String rightTitle,
+            @P(required = true, value = "The text content on the right side") String rightBlock
+    ) {
+        IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
+        if (windows.length == 0) {
+            log.error("no windows found to open view in");
+            return;
+        }
+
+        IWorkbenchPage page = windows[0].getActivePage();
+
+        CompareConfiguration config = new CompareConfiguration();
+        config.setLeftLabel(leftTitle);
+        config.setRightLabel(rightTitle);
+        config.setLeftEditable(false);
+        config.setRightEditable(false);
+        config.setProperty(CompareConfiguration.IGNORE_WHITESPACE, true);
+
+        CompareEditorInput input = new CompareEditorInput(config) {
+
+            @Override
+            protected Object prepareInput(IProgressMonitor monitor) {
+                return new DiffNode(
+                        new TextCompareInput(leftBlock),
+                        new TextCompareInput(rightBlock)
+                );
+            }
+
+            @Override
+            public Viewer createDiffViewer(Composite parent) {
+                log.info("Craet TextMergeViewer");
+                return new TextMergeViewer(parent, config);
+            }
+
+        };
+
+        input.setTitle("AI compare");
+        Display.getDefault().asyncExec(new Runnable() {
+            public void run() {
+                CompareUI.openCompareEditorOnPage(input, page);
+            }
+        });
+    }
+
 }

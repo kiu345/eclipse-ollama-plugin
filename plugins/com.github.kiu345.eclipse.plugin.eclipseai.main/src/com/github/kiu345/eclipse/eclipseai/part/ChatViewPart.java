@@ -450,12 +450,13 @@ public class ChatViewPart {
         uiSync.asyncExec(() -> {
             PromptParser parser = new PromptParser(messageBody);
             String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml(messageId)));
-
             // inject and highlight html message
             browser.execute(
-                    "var element = document.getElementById(\"message-" + messageId.toString() + "\");"
-                            + "element.innerHTML = '" + fixedHtml + "';"
-                            + "hljs.highlightAll();"
+                    """
+                        var element = document.getElementById("%s");
+                        element.innerHTML = '%s';
+                        hljs.highlightAll();
+                    """.formatted("message-" + messageId.toString(), fixedHtml)
             );
             // Scroll down
             browser.execute("window.scrollTo(0, document.body.scrollHeight);");
