@@ -151,7 +151,6 @@ public class AIStreamJavaHttpClient {
                     try {
                         toolResultValue = toolService.executeTool(tools, execRequest);
                         if (toolResultValue == null) {
-                            logger.warn("Tool returned null");
                             toolResultValue = null;
                             publisher.submit(new Incoming(Incoming.Type.CONTENT, "[Tool executed]", true));
                         }
@@ -179,8 +178,6 @@ public class AIStreamJavaHttpClient {
                         publisher.submit(new Incoming(Incoming.Type.CONTENT, getBuffer()+"\n..."));
                         break;
                 }
-
-                logger.info("resending request");
 
                 ChatRequest newRequest = createRequest(allMessages, modelInfo, configuration.getUseFunctions().orElse(false));
                 StreamResponseHandler handler = new StreamResponseHandler(newRequest, model, modelInfo);

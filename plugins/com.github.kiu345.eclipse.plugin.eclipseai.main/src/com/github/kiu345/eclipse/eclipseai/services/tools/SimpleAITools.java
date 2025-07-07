@@ -108,12 +108,12 @@ public class SimpleAITools {
         return null;
     }
 
-    @Tool("Returns file content of the editor")
+    @Tool("Opens a new compare editor which shows to text elements to each other. Input needs to be well formatted with whitespaces and newlines.")
     public void showCompareView(
             @P(required = true, value = "The title text of the left side") String leftTitle,
-            @P(required = true, value = "The text content on the left side") String leftBlock,
+            @P(required = true, value = "The text content on the left side. Needs to be the full content, do NOT use segments.") String leftBlock,
             @P(required = true, value = "The title text of on the right side") String rightTitle,
-            @P(required = true, value = "The text content on the right side") String rightBlock
+            @P(required = true, value = "The text content on the right side. Needs to be the full content, do NOT use segments.") String rightBlock
     ) {
         IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
         if (windows.length == 0) {
