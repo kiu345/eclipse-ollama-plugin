@@ -16,5 +16,6 @@ public class PreferenceConstants {
     public static final String ECLIPSEAI_API_KEY = "EclipseAIApiKey";
     public static final String ECLIPSEAI_CONNECTION_TIMEOUT_SECONDS = "EclipseAIConnectionTimeoutSeconds";
     public static final String ECLIPSEAI_REQUEST_TIMEOUT_SECONDS = "EclipseAIRequestTimeoutSeconds";
+    public static final String ECLIPSEAI_KEEPALIVE_SECONDS = "EclipseAIKeepAliveSeconds";
     public static final String ECLIPSEAI_CONVERSATION_ID = "EclipseAIConversationId";
 }

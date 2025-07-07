@@ -261,6 +261,11 @@ public class AIStreamJavaHttpClient {
 
         String sysPrompt = preferenceStore.getString(Prompts.SYSTEM.preferenceName());
 
+        Integer keepAlive = configuration.getKeepAliveSeconds();
+        if (keepAlive != null) {
+            paramsBuilder.keepAlive(keepAlive);
+        }
+
         paramsBuilder.modelName(desciption.model());
         if (withFunctions) {
             paramsBuilder.toolSpecifications(toolService.findTools().stream().map(e -> e.getTool()).toList());

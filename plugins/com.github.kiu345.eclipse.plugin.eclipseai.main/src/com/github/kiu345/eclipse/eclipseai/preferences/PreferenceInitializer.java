@@ -16,6 +16,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
         store.setDefault(PreferenceConstants.ECLIPSEAI_CONNECTION_TIMEOUT_SECONDS, 10);
         store.setDefault(PreferenceConstants.ECLIPSEAI_REQUEST_TIMEOUT_SECONDS, 30);
+        store.setDefault(PreferenceConstants.ECLIPSEAI_KEEPALIVE_SECONDS, 600);
 
         store.setDefault(PreferenceConstants.ECLIPSEAI_BASE_URL, "http://localhost:11434");
         store.setDefault(PreferenceConstants.ECLIPSEAI_API_BASE_PATH, "/api");
