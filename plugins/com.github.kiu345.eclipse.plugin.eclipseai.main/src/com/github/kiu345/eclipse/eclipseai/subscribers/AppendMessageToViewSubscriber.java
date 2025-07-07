@@ -45,7 +45,12 @@ public class AppendMessageToViewSubscriber implements Flow.Subscriber<Incoming> 
         Objects.requireNonNull(presenter);
         Objects.requireNonNull(message);
         Objects.requireNonNull(subscription);
-        message.append(item.payload());
+        if (item.append()) {
+            message.append(item.payload());
+        }
+        else {
+            message.setContent(item.payload());
+        }
         presenter.updateMessageFromAssistant(message);
         subscription.request(1);
     }

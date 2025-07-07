@@ -91,7 +91,7 @@ public class ToolService {
                     Object result = executeTool(tool, request.arguments());
                     if (result == null) {
                         log.warn("tool returned null value");
-                        return null;
+                        return "{\"result\": \"OK\"}";
                     }
                     if (result instanceof String val) {
                         log.info("tool returned string value");

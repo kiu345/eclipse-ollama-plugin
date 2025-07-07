@@ -49,7 +49,7 @@ import jakarta.inject.Singleton;
 @Singleton
 public class ChatPresenter {
     @Inject
-    private ILog logger;
+    private ILog log;
 
     @Inject
     private PartAccessor partAccessor;
@@ -86,31 +86,6 @@ public class ChatPresenter {
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(propChangeListener);
     }
 
-    public void onClear() {
-        onStop();
-        if (configuration != null) {
-            logger.warn("configuration is null");
-            configuration.setConversationId("");
-        }
-        conversation.clear();
-        attachments.clear();
-        partAccessor.findMessageView().ifPresent(view -> {
-            view.clearChatView();
-            view.clearAttachments();
-        });
-    }
-
-    public void onSendPredefinedMessage(String text) {
-        EclipseAIHandlerInvoker.Invoke(text);
-    }
-
-    public void onSendUserMessage(String text) {
-        logger.info("Send user message");
-        ChatMessage message = createUserMessage(text);
-        conversation.add(message);
-        sendConversationJobProvider.get().schedule();
-    }
-
     private ChatMessage createUserMessage(String userMessage) {
         ChatMessage message = chatMessageFactory.createUserChatMessage(() -> userMessage);
         message.setAttachments(attachments);
@@ -126,6 +101,20 @@ public class ChatPresenter {
         return message;
     }
 
+    public void updateMessageFromAssistant(ChatMessage message) {
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.setMessageHtml(message.getId(), message.getContent());
+        });
+    }
+
+    public void endMessageFromAssistant() {
+        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"plaintext-only\"></div>");
+        conversation.add(message);
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.addInputBlock(message.getId());
+        });
+    }
+
     public ChatMessage beginMessageFromUI() {
         ChatMessage message = chatMessageFactory.createAssistantChatMessage("");
         conversation.add(message);
@@ -133,6 +122,12 @@ public class ChatPresenter {
             messageView.appendMessage(message.getId(), "user");
         });
         return message;
+    }
+
+    public void updateMessageFromUI(ChatMessage message) {
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.setInputHtml(message.getId(), message.getContent());
+        });
     }
 
     public ChatMessage insertInputMessageBlock() {
@@ -144,24 +139,29 @@ public class ChatPresenter {
         return message;
     }
 
-    public void updateMessageFromAssistant(ChatMessage message) {
-        partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.setMessageHtml(message.getId(), message.getContent());
+    public void onClear() {
+        onStop();
+        if (configuration != null) {
+            log.warn("configuration is null");
+            configuration.setConversationId("");
+        }
+        conversation.clear();
+        attachments.clear();
+        partAccessor.findMessageView().ifPresent(view -> {
+            view.clearChatView();
+            view.clearAttachments();
         });
     }
 
-    public void updateMessageFromUI(ChatMessage message) {
-        partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.setInputHtml(message.getId(), message.getContent());
-        });
+    public void onSendPredefinedMessage(String text) {
+        EclipseAIHandlerInvoker.Invoke(text);
     }
 
-    public void endMessageFromAssistant() {
-        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"plaintext-only\"></div>");
+    public void onSendUserMessage(String text) {
+        log.info("Send user message");
+        ChatMessage message = createUserMessage(text);
         conversation.add(message);
-        partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.addInputBlock(message.getId());
-        });
+        sendConversationJobProvider.get().schedule();
     }
 
     /**
@@ -191,7 +191,7 @@ public class ChatPresenter {
     }
 
     public void onApplyPatch(String codeBlock) {
-        logger.info("codeBlock = " + codeBlock);
+        log.info("codeBlock = " + codeBlock);
         applyPatchWizzardHelper.showApplyPatchWizardDialog(codeBlock, null);
 
     }
@@ -234,7 +234,7 @@ public class ChatPresenter {
                     preferences.flush();
                 }
                 catch (BackingStoreException e) {
-                    logger.error("Error saving last selected directory preference", e);
+                    log.error("Error saving last selected directory preference", e);
                 }
 
                 ImageData[] imageDataArray = new ImageLoader().load(selectedFilePath);
@@ -253,7 +253,7 @@ public class ChatPresenter {
     }
 
     public void onImageSelected(Image image) {
-        logger.info("selected");
+        log.info("selected");
     }
 
     public void onAttachmentAdded(ImageData imageData) {
