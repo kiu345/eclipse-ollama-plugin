@@ -58,13 +58,6 @@ public class EclipseAIHandlerInvoker {
                     )).runPrompt();
                     ;
                     break;
-                case UPGRADE_SOURCE:
-                    ((EclipseAIJavaUpgradeHandler) ContextInjectionFactory.make(
-                            Activator.getBundleContext().getBundle().loadClass(EclipseAIJavaUpgradeHandler.class.getName()),
-                            EclipseContextFactory.getServiceContext(Activator.getBundleContext())
-                    )).runPrompt();
-                    ;
-                    break;
                 case DISCUSS_SELECTED:
                     break;
             }

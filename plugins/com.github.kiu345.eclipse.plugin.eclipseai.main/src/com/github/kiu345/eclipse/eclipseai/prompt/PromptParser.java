@@ -29,7 +29,12 @@ public class PromptParser {
 
     private int state = DEFAULT_STATE;
 
-    private final String prompt;
+    private static final String START_THINK = "<think>";
+    private static final String END_THINK = "</think>";
+
+    private String prompt;
+    private Pattern codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
+    private Pattern functionCallPattern = Pattern.compile("^\"function_call\".*");
 
     public PromptParser(String prompt) {
         this.prompt = prompt;
@@ -40,32 +45,67 @@ public class PromptParser {
      *
      * @return An HTML formatted string representation of the prompt text.
      */
-    public String parseToHtml() {
+    public String parseToHtml(UUID msgUuid) {
         var out = new StringBuilder();
+
+        var thinkString = "";
+        
+        if (prompt.startsWith("<think>")) {
+            int think_end = prompt.indexOf(END_THINK);
+            out.append("<div class=\"thinking\">");
+            out.append("<div class=\"header\">Thought<a class=\"headertools\" onClick=\"toggelView('thought_"+msgUuid.toString()+"')\">Show/hide</a></div>");
+            out.append("<div id=\"thought_"+msgUuid.toString()+"\" class=\"thought\" style=\"display: none;\">");
+            if (think_end >= 0) {
+                thinkString = prompt.substring(START_THINK.length(),think_end);
+                prompt = prompt.substring(think_end+END_THINK.length());
+                out.append(StringEscapeUtils.escapeHtml4(thinkString));
+                out.append("</div></div>");
+            }
+            else {
+                thinkString = prompt.substring(START_THINK.length());
+                out.append(StringEscapeUtils.escapeHtml4(thinkString));
+                out.append("</div></div>");
+                return out.toString();
+            }
+        }
 
         try (var scanner = new Scanner(prompt)) {
             scanner.useDelimiter("\n");
-            var codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
-            var functionCallPattern = Pattern.compile("^\"function_call\".*");
+            StringBuilder textBuffer = new StringBuilder();
             while (scanner.hasNext()) {
                 var line = scanner.next();
                 var codeBlockMatcher = codeBlockPattern.matcher(line);
                 var functionBlockMatcher = functionCallPattern.matcher(line);
 
                 if (codeBlockMatcher.find()) {
+                    if (!textBuffer.isEmpty()) {
+                        handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                        textBuffer = new StringBuilder();
+                    }
                     var indentSize = codeBlockMatcher.group(1).length();
                     var lang = codeBlockMatcher.group(2);
                     handleCodeBlock(out, lang, indentSize);
                 }
                 else if (functionBlockMatcher.find()) {
+                    if (!textBuffer.isEmpty()) {
+                        handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                        textBuffer = new StringBuilder();
+                    }
                     handleFunctionCall(out, line);
                 }
                 else if (line.startsWith(TATT_CONTEXTSTART)) {
+                    if (!textBuffer.isEmpty()) {
+                        handleNonCodeBlock(out, textBuffer.toString(), !scanner.hasNext());
+                        textBuffer = new StringBuilder();
+                    }
                     handleTextAttachmentStart(out, line);
                 }
                 else {
-                    handleNonCodeBlock(out, line, !scanner.hasNext());
+                   textBuffer.append(line+"\n");
                 }
+            }
+            if (!textBuffer.isEmpty()) {
+                handleNonCodeBlock(out, textBuffer.toString(), false);
             }
         }
         return out.toString();
@@ -89,7 +129,7 @@ public class PromptParser {
                             <div class="function-call">
                             <details><summary>Function call</summary>
                             <pre>
-                            """ + line
+                    """ + line
 
             );
             state ^= FUNCION_CALL_STATE;
@@ -99,7 +139,6 @@ public class PromptParser {
 
     private void handleNonCodeBlock(StringBuilder out, String line, boolean lastLine) {
         if ((state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) {
-
             out.append(StringEscapeUtils.escapeHtml4(escapeBackSlashes(line)));
         }
         else if ((state & TEXT_ATTACHMENT_STATE) == TEXT_ATTACHMENT_STATE) {
@@ -107,7 +146,7 @@ public class PromptParser {
             return;
         }
         else {
-            out.append(markdown(StringEscapeUtils.escapeHtml4(line)));
+            out.append(markdown(line));
         }
 
         if (lastLine && (state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) // close opened code blocks
@@ -121,7 +160,7 @@ public class PromptParser {
         else if ((state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) {
             out.append("\n");
         }
-        else {
+        else if (!lastLine) {
             out.append("<br/>");
         }
     }

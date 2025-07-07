@@ -88,7 +88,7 @@ public class SimpleTest
         IPath jrePath = new Path(JavaRuntime.JRE_CONTAINER);
 //        IClasspathEntry jreEntry = JavaCore.newContainerEntry(jrePath);
 
-        IPath pathToDoc = new Path("https://docs.oracle.com/en/java/javase/17/docs/api/"); // replace with the actual path
+        IPath pathToDoc = new Path("https://docs.oracle.com/en/java/javase/21/docs/api/"); // replace with the actual path
 
         IClasspathAttribute[] extraAttributes = new IClasspathAttribute[] {
             JavaCore.newClasspathAttribute(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME, pathToDoc.toString())

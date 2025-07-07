@@ -12,6 +12,7 @@ import org.eclipse.e4.core.di.annotations.Creatable;
 
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.Incoming;
+import com.github.kiu345.eclipse.eclipseai.model.Incoming.Type;
 import com.github.kiu345.eclipse.eclipseai.part.ChatPresenter;
 
 @Creatable
@@ -45,8 +46,19 @@ public class AppendMessageToViewSubscriber implements Flow.Subscriber<Incoming> 
         Objects.requireNonNull(presenter);
         Objects.requireNonNull(message);
         Objects.requireNonNull(subscription);
-        message.append(item.payload());
-        presenter.updateMessageFromAssistant(message);
+        if (Type.ERROR.equals(item.type())) {
+            message.setContent(item.payload());
+            presenter.onError(message);
+        }
+        else {
+            if (item.append()) {
+                message.append(item.payload());
+            }
+            else {
+                message.setContent(item.payload());
+            }
+            presenter.updateMessageFromAssistant(message);
+        }
         subscription.request(1);
     }
 

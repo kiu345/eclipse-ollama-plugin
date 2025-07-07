@@ -7,4 +7,5 @@ public record ModelDescriptor(
         String providfer,
         String title,
         boolean vision,
-        boolean functionCalling) {}
+        boolean functionCalling,
+        boolean thinking) {}

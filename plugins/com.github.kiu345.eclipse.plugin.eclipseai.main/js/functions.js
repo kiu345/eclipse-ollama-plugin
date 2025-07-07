@@ -53,6 +53,16 @@ function addAttachment(name) {
 	document.getElementById('attachments').appendChild(newItem);
 }
 
+function toggelView(id) {
+	const element = document.getElementById(id);
+	if (element.style.display == 'none') {
+		element.style.display = 'block';
+	}
+	else {
+		element.style.display = 'none';
+	}
+}
+
 function handleInput() {
 	const selection = window.getSelection();
 	const range = selection.getRangeAt(0);

@@ -1,6 +1,6 @@
 package com.github.kiu345.eclipse.eclipseai.part;
 
-import static com.github.kiu345.eclipse.eclipseai.tools.ImageUtilities.createPreview;
+import static com.github.kiu345.eclipse.eclipseai.util.ImageUtilities.createPreview;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ import com.github.kiu345.eclipse.eclipseai.handlers.EclipseAIHandlerInvoker;
 import com.github.kiu345.eclipse.eclipseai.jobs.EclipseAIJobConstants;
 import com.github.kiu345.eclipse.eclipseai.jobs.SendConversationJob;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
+import com.github.kiu345.eclipse.eclipseai.model.ChatMessage.Type;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
 import com.github.kiu345.eclipse.eclipseai.preferences.PreferenceConstants;
@@ -49,7 +50,7 @@ import jakarta.inject.Singleton;
 @Singleton
 public class ChatPresenter {
     @Inject
-    private ILog logger;
+    private ILog log;
 
     @Inject
     private PartAccessor partAccessor;
@@ -74,7 +75,6 @@ public class ChatPresenter {
 
     private static final String LAST_SELECTED_DIR_KEY = "lastSelectedDirectory";
 
-    // Preference node for your plugin
     private Preferences preferences = InstanceScope.INSTANCE.getNode("com.github.kiu345.eclipse.eclipseai");
 
     private ClientConfiguration configuration;
@@ -86,39 +86,11 @@ public class ChatPresenter {
         appendMessageToViewSubscriber.setPresenter(this);
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(propChangeListener);
     }
-
-    public void onClear() {
-        onStop();
-        if (configuration != null) {
-            logger.warn("configuration is null");
-            configuration.setConversationId("");
-        }
-        conversation.clear();
-        attachments.clear();
-        partAccessor.findMessageView().ifPresent(view -> {
-            view.clearChatView();
-//            view.clearUserInput();
-            view.clearAttachments();
+    
+    public void onError(ChatMessage message) {
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.setMessageHtml(message.getId(), message.getContent(), Type.ERROR);
         });
-    }
-
-    public void onSendPredefinedMessage(String text) {
-        EclipseAIHandlerInvoker.Invoke(text);
-    }
-
-    public void onSendUserMessage(String text) {
-        logger.info("Send user message");
-        ChatMessage message = createUserMessage(text);
-        conversation.add(message);
-//        partAccessor.findMessageView().ifPresent(part -> {
-//            part.clearUserInput();
-//            part.clearAttachments();
-//            part.appendMessage(message.getId(), message.getRole());
-//            String content = ChatMessageUtilities.toMarkdownContent(message);
-//            part.setMessageHtml(message.getId(), content);
-//            attachments.clear();
-//        });
-        sendConversationJobProvider.get().schedule();
     }
 
     private ChatMessage createUserMessage(String userMessage) {
@@ -132,9 +104,22 @@ public class ChatPresenter {
         conversation.add(message);
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.appendMessage(message.getId(), message.getRole());
-//            messageView.setInputEnabled(false);
         });
         return message;
+    }
+
+    public void updateMessageFromAssistant(ChatMessage message) {
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.setMessageHtml(message.getId(), message.getContent(), Type.MESSAGE);
+        });
+    }
+
+    public void endMessageFromAssistant() {
+        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"plaintext-only\"></div>");
+        conversation.add(message);
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.addInputBlock(message.getId());
+        });
     }
 
     public ChatMessage beginMessageFromUI() {
@@ -146,6 +131,12 @@ public class ChatPresenter {
         return message;
     }
 
+    public void updateMessageFromUI(ChatMessage message) {
+        partAccessor.findMessageView().ifPresent(messageView -> {
+            messageView.setInputHtml(message.getId(), message.getContent());
+        });
+    }
+
     public ChatMessage insertInputMessageBlock() {
         ChatMessage message = chatMessageFactory.createAssistantChatMessage("");
         conversation.add(message);
@@ -155,25 +146,29 @@ public class ChatPresenter {
         return message;
     }
 
-    public void updateMessageFromAssistant(ChatMessage message) {
-        partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.setMessageHtml(message.getId(), message.getContent());
+    public void onClear() {
+        onStop();
+        if (configuration != null) {
+            log.warn("configuration is null");
+            configuration.setConversationId("");
+        }
+        conversation.clear();
+        attachments.clear();
+        partAccessor.findMessageView().ifPresent(view -> {
+            view.clearChatView();
+            view.clearAttachments();
         });
     }
 
-    public void updateMessageFromUI(ChatMessage message) {
-        partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.setInputHtml(message.getId(), message.getContent());
-        });
+    public void onSendPredefinedMessage(String text) {
+        EclipseAIHandlerInvoker.Invoke(text);
     }
 
-    public void endMessageFromAssistant() {
-        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"true\"></div>");
+    public void onSendUserMessage(String text) {
+        log.info("Send user message");
+        ChatMessage message = createUserMessage(text);
         conversation.add(message);
-        partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.addInputBlock(message.getId());
-//            messageView.setInputEnabled( true );
-        });
+        sendConversationJobProvider.get().schedule();
     }
 
     /**
@@ -181,7 +176,8 @@ public class ChatPresenter {
      */
     public void onStop() {
         var jobs = jobManager.find(null);
-        Arrays.stream(jobs).filter(job -> job.getName().startsWith(EclipseAIJobConstants.JOB_PREFIX))
+        Arrays.stream(jobs)
+                .filter(job -> job.getName().startsWith(EclipseAIJobConstants.JOB_PREFIX))
                 .forEach(Job::cancel);
 
         partAccessor.findMessageView().ifPresent(messageView -> {
@@ -202,7 +198,7 @@ public class ChatPresenter {
     }
 
     public void onApplyPatch(String codeBlock) {
-        logger.info("codeBlock = " + codeBlock);
+        log.info("codeBlock = " + codeBlock);
         applyPatchWizzardHelper.showApplyPatchWizardDialog(codeBlock, null);
 
     }
@@ -213,7 +209,7 @@ public class ChatPresenter {
         // update view
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.appendMessage(message.getId(), message.getRole());
-            messageView.setMessageHtml(message.getId(), type.getDescription());
+            messageView.setMessageHtml(message.getId(), type.getDescription(), Type.MESSAGE);
         });
 
         // schedule message
@@ -245,7 +241,7 @@ public class ChatPresenter {
                     preferences.flush();
                 }
                 catch (BackingStoreException e) {
-                    logger.error("Error saving last selected directory preference", e);
+                    log.error("Error saving last selected directory preference", e);
                 }
 
                 ImageData[] imageDataArray = new ImageLoader().load(selectedFilePath);
@@ -264,7 +260,7 @@ public class ChatPresenter {
     }
 
     public void onImageSelected(Image image) {
-        logger.info("selected");
+        log.info("selected");
     }
 
     public void onAttachmentAdded(ImageData imageData) {
@@ -282,9 +278,10 @@ public class ChatPresenter {
     }
 
     private IPropertyChangeListener propChangeListener = e -> {
-        if (PreferenceConstants.ECLIPSEAI_BASE_URL.equals(e.getProperty()) ||
+        if (PreferenceConstants.ECLIPSEAI_PROVIDER.equals(e.getProperty()) ||
+                PreferenceConstants.ECLIPSEAI_BASE_URL.equals(e.getProperty()) ||
+                PreferenceConstants.ECLIPSEAI_API_BASE_PATH.equals(e.getProperty()) ||
                 PreferenceConstants.ECLIPSEAI_GET_MODEL_API_PATH.equals(e.getProperty()) ||
-                PreferenceConstants.ECLIPSEAI_API_BASE_URL.equals(e.getProperty()) ||
                 PreferenceConstants.ECLIPSEAI_API_KEY.equals(e.getProperty())) {
             partAccessor.findMessageView().ifPresent(view -> {
                 view.makeComboList();
