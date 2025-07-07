@@ -28,7 +28,7 @@ Export-Package: com.github.kiu345.eclipse.eclipseai;uses:="org.osgi.framework,co
  com.github.kiu345.eclipse.eclipseai.prompt;uses:="com.github.kiu345.eclipse.eclipseai.model,com.github.kiu345.eclipse.eclipseai.handlers",
  com.github.kiu345.eclipse.eclipseai.services;uses:="com.github.kiu345.eclipse.eclipseai.model,com.fasterxml.jackson.databind",
  com.github.kiu345.eclipse.eclipseai.subscribers;uses:="com.github.kiu345.eclipse.eclipseai.services,com.github.kiu345.eclipse.eclipseai.model,com.github.kiu345.eclipse.eclipseai.part",
- com.github.kiu345.eclipse.eclipseai.tools;uses:="org.eclipse.swt.graphics"
+ com.github.kiu345.eclipse.eclipseai.util;uses:="org.eclipse.swt.graphics"
 Bundle-Activator: com.github.kiu345.eclipse.eclipseai.Activator
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: eclipseai.main

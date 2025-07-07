@@ -1,6 +1,6 @@
 package com.github.kiu345.eclipse.eclipseai.part;
 
-import static com.github.kiu345.eclipse.eclipseai.tools.ImageUtilities.createPreview;
+import static com.github.kiu345.eclipse.eclipseai.util.ImageUtilities.createPreview;
 
 import java.io.File;
 import java.util.ArrayList;

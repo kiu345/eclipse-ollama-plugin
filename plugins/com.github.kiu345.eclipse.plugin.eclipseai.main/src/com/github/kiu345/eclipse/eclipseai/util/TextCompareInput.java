@@ -1,4 +1,4 @@
-package com.github.kiu345.eclipse.eclipseai.tools;
+package com.github.kiu345.eclipse.eclipseai.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
