@@ -108,7 +108,7 @@ public class SimpleAITools {
         return null;
     }
 
-    @Tool("Opens a new compare editor which shows to text elements to each other. Input needs to be well formatted with whitespaces and newlines.")
+    @Tool("Opens a new compare editor in the IDE which shows two text elements to each other. Input needs to be well formatted with whitespaces and newlines. Do NOT call for fragments of code or other tasks.")
     public void showCompareView(
             @P(required = true, value = "The title text of the left side") String leftTitle,
             @P(required = true, value = "The complete text content on the left side. Needs to be the full content, do NOT use segments.") String leftCode,
