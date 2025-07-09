@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
@@ -45,8 +44,9 @@ import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
 import com.github.kiu345.eclipse.eclipseai.part.dnd.DropManager;
-import com.github.kiu345.eclipse.eclipseai.prompt.InputParser;
-import com.github.kiu345.eclipse.eclipseai.prompt.PromptParser;
+import com.github.kiu345.eclipse.eclipseai.part.helper.MessageInputHandler;
+import com.github.kiu345.eclipse.eclipseai.part.helper.UserInputHandler;
+import com.github.kiu345.eclipse.eclipseai.part.viewfunction.SendPromptFunction;
 import com.github.kiu345.eclipse.eclipseai.services.ClientConfiguration;
 import com.github.kiu345.eclipse.eclipseai.services.OllamaHttpClient;
 
@@ -74,6 +74,12 @@ public class ChatViewPart {
     @Inject
     private ClientConfiguration configuration;
 
+    @Inject
+    private UserInputHandler inputHandler;
+
+    @Inject
+    private MessageInputHandler agentHandler;
+
     private Combo modelCombo;
 
     @SuppressWarnings("unused")
@@ -96,9 +102,6 @@ public class ChatViewPart {
               </ul>
             </div>
             """;
-
-    public ChatViewPart() {
-    }
 
     @Focus
     public void setFocus() {
@@ -199,8 +202,6 @@ public class ChatViewPart {
         }
 
         dropManager.registerDropTarget(controls);
-
-        clearAttachments();
     }
 
     private Scale addScaleField(Composite form, String labelText) {
@@ -368,7 +369,24 @@ public class ChatViewPart {
         new CopyCodeFunction(browser, "eclipseCopyCode");
         new SaveCodeFunction(browser, "eclipseSaveCode");
         new ApplyPatchFunction(browser, "eclipseApplyPatch");
-        new SendPromptFunction(browser, "eclipseSendPrompt");
+        new SendPromptFunction(browser, "eclipseSendPrompt", this::onSend);
+    }
+
+    private void onSend(String userPrompt, boolean predefinedPrompt) {
+        if (fileAttachments.size() != 0) {
+            for (FileContentAttachment fca : fileAttachments) {
+                userPrompt = userPrompt + "\n\n" + fca.toChatMessageContent();
+            }
+        }
+
+        if (predefinedPrompt) {
+            presenter.onSendPredefinedMessage(userPrompt);
+        }
+        else {
+            presenter.onSendUserMessage(userPrompt);
+        }
+        fileAttachments.clear();
+
     }
 
     /**
@@ -447,96 +465,20 @@ public class ChatViewPart {
         browser.setText(htmlTemplate);
     }
 
-    public void setMessageHtml(UUID messageId, String messageBody, ChatMessage.Type type) {
-        uiSync.asyncExec(() -> {
-            PromptParser parser = new PromptParser(messageBody);
-            String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.parseToHtml(messageId)));
-            switch (type) {
-                case ERROR:
-                    fixedHtml = "<div style=\"background-color: #FFCCCC;\"><p><b>ERROR:</b></p>"+fixedHtml+"</div>";
-                    break;
-                default:
-                    ;
-            }
-            // inject and highlight html message
-            browser.execute(
-                    """
-                        var element = document.getElementById("%s");
-                        element.innerHTML = '%s';
-                        hljs.highlightAll();
-                    """.formatted("message-" + messageId.toString(), fixedHtml)
-            );
-            // Scroll down
-            browser.execute("window.scrollTo(0, document.body.scrollHeight);");
-        });
+    public void addInputBlock(UUID messageId) {
+        inputHandler.createElement(browser, messageId, ChatMessage.ROLE_USER);
     }
 
     public void setInputHtml(UUID messageId, String messageBody) {
-        uiSync.asyncExec(() -> {
-            InputParser parser = new InputParser(messageBody);
-
-            String fixedHtml = escapeHtmlQuotes(fixLineBreaks(parser.removeLastBr(parser.parseToHtml())));
-            // inject and highlight html message
-            browser.execute(
-                    "var element = document.getElementById(\"message-" + messageId.toString() + "\");" + "element.innerHTML = '"
-                            + fixedHtml + "';" + "hljs.highlightElement(element.querySelector('pre code'));"
-            );
-            // Scroll down
-            browser.execute("window.scrollTo(0, document.body.scrollHeight);");
-        });
-    }
-
-    public void addInputBlock(UUID messageId) {
-        uiSync.asyncExec(() -> {
-            // inject and highlight html message
-            browser.execute(
-                    "document.getElementById(\"content\").innerHTML += '"
-                            + "<div class=\"chat-bubble me current\" contenteditable=\"plaintext-only\" autofocus placeholder=\"Ask a follow-up\"></div>"
-                            + "<div id=\"context\" class=\"context\"><div class=\"header\">Context</div><ul id=\"attachments\" class=\"file-list\"></ul></div>"
-                            + "';"
-            );
-            // Scroll down
-            browser.execute("addKeyCapture();");
-            browser.execute("window.scrollTo(0, document.body.scrollHeight);");
-        });
-    }
-
-    /**
-     * Replaces newline characters with line break escape sequences in the given
-     * string.
-     *
-     * @param html The input string containing newline characters.
-     * @return A string with newline characters replaced by line break escape
-     *         sequences.
-     */
-    private String fixLineBreaks(String html) {
-        return html.replace("\n", "\\n").replace("\r", "");
-    }
-
-    /**
-     * Escapes HTML quotation marks in the given string.
-     * 
-     * @param html The input string containing HTML.
-     * @return A string with escaped quotation marks for proper HTML handling.
-     */
-    private String escapeHtmlQuotes(String html) {
-        return html.replace("\"", "\\\"").replace("'", "\\'");
+        inputHandler.updateElement(browser, messageId, ChatMessage.Type.MESSAGE, messageBody);
     }
 
     public void appendMessage(UUID uuid, String role) {
-        String cssClass = "user".equals(role) ? "chat-bubble me" : "chat-bubble you";
-        uiSync.asyncExec(() -> {
-            browser.execute("""
-                    node = document.createElement("div");
-                    node.setAttribute("id", "message-${id}");
-                    node.setAttribute("class", "${cssClass}");
-                    document.getElementById("content").appendChild(node);
-                        """.replace("${id}", uuid.toString()).replace("${cssClass}", cssClass));
-            browser.execute(
-                    // Scroll down
-                    "window.scrollTo(0, document.body.scrollHeight);"
-            );
-        });
+        agentHandler.createElement(browser, uuid, role);
+    }
+
+    public void setMessageHtml(UUID messageId, String messageBody, ChatMessage.Type type) {
+        agentHandler.updateElement(browser, messageId, type, messageBody);
     }
 
     public void insertInputMessageBlock(UUID uuid, String role) {
@@ -558,69 +500,11 @@ public class ChatViewPart {
         });
     }
 
-    public void setInputMessage(String command) {
-        uiSync.asyncExec(() -> {
-            browser.execute("""
-                    setPredefinedPrompt('/${command}');
-                    """.replace("${command}", command));
-//            browser.execute(
-//                    // Scroll down
-//                    "window.scrollTo(0, document.body.scrollHeight);" );
-        });
-    }
-
-    public Object removeMessage(int id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public void clearAttachments() {
-        setAttachments(Collections.emptyList());
-    }
-
-    public void setAttachments(List<Attachment> attachments) {
-        /*
-         * uiSync.asyncExec(() -> {
-         * // Dispose of existing children to avoid memory leaks and remove old
-         * // images
-         * for (var child : imagesContainer.getChildren()) {
-         * child.dispose();
-         * }
-         * 
-         * imagesContainer.setLayout(new RowLayout(SWT.HORIZONTAL));
-         * 
-         * if (attachments.isEmpty()) {
-         * scrolledComposite.setVisible(false);
-         * ((GridData) scrolledComposite.getLayoutData()).heightHint = 0;
-         * }
-         * else {
-         * AttachmentVisitor attachmentVisitor = new AttachmentVisitor();
-         * 
-         * // There are images to display, add them to the imagesContainer
-         * for (var attachment : attachments) {
-         * attachment.accept(attachmentVisitor);
-         * }
-         * scrolledComposite.setVisible(true);
-         * imagesContainer.setSize(imagesContainer.computeSize(SWT.DEFAULT, SWT.DEFAULT));
-         * ((GridData) scrolledComposite.getLayoutData()).heightHint = SWT.DEFAULT;
-         * }
-         * // Refresh the layout
-         * updateLayout(imagesContainer);
-         * });
-         */
-    }
-
     public void updateLayout(Composite composite) {
         if (composite != null) {
             composite.layout();
             updateLayout(composite.getParent());
         }
-    }
-
-    public void setInputEnabled(boolean b) {
-//        uiSync.asyncExec(() -> {
-//            inputArea.setEnabled(b);
-//        });
     }
 
     /**
@@ -673,40 +557,6 @@ public class ChatViewPart {
                 catch (IOException e) {
                     logger.error("Error writing to file: " + e.getMessage());
                 }
-            }
-
-            return null;
-        }
-    }
-
-    private class SendPromptFunction extends BrowserFunction {
-        public SendPromptFunction(Browser browser, String name) {
-            super(browser, name);
-        }
-
-        @Override
-        public Object function(Object[] arguments) {
-            String userPrompt;
-            Boolean isPreDefinedPormpt = false;
-
-            if (arguments.length > 0 && arguments[0] instanceof String) {
-                userPrompt = (String) arguments[0];
-                if (fileAttachments.size() != 0) {
-                    for (FileContentAttachment fca : fileAttachments) {
-                        userPrompt = userPrompt + "\n\n" + fca.toChatMessageContent();
-                    }
-                }
-
-                if (arguments.length > 1 && arguments[1] instanceof Boolean)
-                    isPreDefinedPormpt = Boolean.valueOf(arguments[1].toString());
-
-                if (isPreDefinedPormpt) {
-                    presenter.onSendPredefinedMessage(userPrompt);
-                }
-                else {
-                    presenter.onSendUserMessage(userPrompt);
-                }
-                fileAttachments.clear();
             }
 
             return null;

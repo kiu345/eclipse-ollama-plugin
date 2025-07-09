@@ -2,7 +2,6 @@ package com.github.kiu345.eclipse.eclipseai.part;
 
 import static com.github.kiu345.eclipse.eclipseai.util.ImageUtilities.createPreview;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,21 +10,14 @@ import java.util.function.Consumer;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.core.di.annotations.Creatable;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.ImageLoader;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.PlatformUI;
-import org.osgi.service.prefs.BackingStoreException;
-import org.osgi.service.prefs.Preferences;
 
 import com.github.kiu345.eclipse.eclipseai.Activator;
 import com.github.kiu345.eclipse.eclipseai.handlers.EclipseAIHandlerInvoker;
@@ -35,6 +27,7 @@ import com.github.kiu345.eclipse.eclipseai.model.ChatMessage;
 import com.github.kiu345.eclipse.eclipseai.model.ChatMessage.Type;
 import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
+import com.github.kiu345.eclipse.eclipseai.part.helper.UserInputHandler;
 import com.github.kiu345.eclipse.eclipseai.preferences.PreferenceConstants;
 import com.github.kiu345.eclipse.eclipseai.prompt.ChatMessageFactory;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
@@ -73,10 +66,6 @@ public class ChatPresenter {
     @Inject
     private ApplyPatchWizardHelper applyPatchWizzardHelper;
 
-    private static final String LAST_SELECTED_DIR_KEY = "lastSelectedDirectory";
-
-    private Preferences preferences = InstanceScope.INSTANCE.getNode("com.github.kiu345.eclipse.eclipseai");
-
     private ClientConfiguration configuration;
 
     private final List<Attachment> attachments = new ArrayList<>();
@@ -86,7 +75,7 @@ public class ChatPresenter {
         appendMessageToViewSubscriber.setPresenter(this);
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(propChangeListener);
     }
-    
+
     public void onError(ChatMessage message) {
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.setMessageHtml(message.getId(), message.getContent(), Type.ERROR);
@@ -115,7 +104,7 @@ public class ChatPresenter {
     }
 
     public void endMessageFromAssistant() {
-        ChatMessage message = chatMessageFactory.createAssistantChatMessage("<div class=\"chat-bubble me\" contenteditable=\"plaintext-only\"></div>");
+        ChatMessage message = chatMessageFactory.createAssistantChatMessage("");
         conversation.add(message);
         partAccessor.findMessageView().ifPresent(messageView -> {
             messageView.addInputBlock(message.getId());
@@ -156,7 +145,6 @@ public class ChatPresenter {
         attachments.clear();
         partAccessor.findMessageView().ifPresent(view -> {
             view.clearChatView();
-            view.clearAttachments();
         });
     }
 
@@ -181,7 +169,7 @@ public class ChatPresenter {
                 .forEach(Job::cancel);
 
         partAccessor.findMessageView().ifPresent(messageView -> {
-            messageView.setInputEnabled(true);
+//            messageView.setInputEnabled(true);
         });
     }
 
@@ -200,7 +188,6 @@ public class ChatPresenter {
     public void onApplyPatch(String codeBlock) {
         log.info("codeBlock = " + codeBlock);
         applyPatchWizzardHelper.showApplyPatchWizardDialog(codeBlock, null);
-
     }
 
     public void onSendPredefinedPrompt(Prompts type, ChatMessage message) {
@@ -215,7 +202,7 @@ public class ChatPresenter {
         // schedule message
         sendConversationJobProvider.get().schedule();
     }
-
+/*
     public void onAddAttachment() {
         Display display = PlatformUI.getWorkbench().getDisplay();
         display.asyncExec(() -> {
@@ -254,7 +241,7 @@ public class ChatPresenter {
             }
         });
     }
-
+*/
     public void applyToView(Consumer<? super ChatViewPart> consumer) {
         partAccessor.findMessageView().ifPresent(consumer);
     }
@@ -266,14 +253,14 @@ public class ChatPresenter {
     public void onAttachmentAdded(ImageData imageData) {
         attachments.add(new Attachment.ImageAttachment(imageData, createPreview(imageData)));
         applyToView(messageView -> {
-            messageView.setAttachments(attachments);
+//            messageView.setAttachments(attachments);
         });
     }
 
     public void onAttachmentAdded(FileContentAttachment attachment) {
         attachments.add(attachment);
         applyToView(messageView -> {
-            messageView.setAttachments(attachments);
+//            messageView.setAttachments(attachments);
         });
     }
 
