@@ -2,13 +2,19 @@ package com.github.kiu345.eclipse.eclipseai.adapter.local;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
+import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapterBase.ChatCall;
+import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.localai.LocalAiChatModel;
+import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
 
 public class LocalAIAdapter implements ChatAdapter {
     
@@ -42,7 +48,7 @@ public class LocalAIAdapter implements ChatAdapter {
 
     public List<ModelDescriptor> getModels() {
         ArrayList<ModelDescriptor> result = new ArrayList<>();
-        ModelDescriptor modelDesc = new ModelDescriptor(apiBaseAddress, "gpt-4", apiKey, "local", "gpt-4", true, true, false);
+        ModelDescriptor modelDesc = new ModelDescriptor(apiBaseAddress, "gpt-4", apiKey, "local", "gpt-4", Collections.emptySet());
         result.add(modelDesc);
         return result;
     }
@@ -56,5 +62,11 @@ public class LocalAIAdapter implements ChatAdapter {
                 .maxRetries(3)
                 .timeout(Duration.ofSeconds(15))
                 .build();
+    }
+
+    @Override
+    public ChatCall<OllamaStreamingChatModel> chatRequest(ModelDescriptor model, Consumer<Msg> newMessageConsumer, Collection<Msg> messages) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -23,6 +23,8 @@ import com.github.kiu345.eclipse.eclipseai.model.Conversation;
 import com.github.kiu345.eclipse.eclipseai.model.Incoming;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
+import com.github.kiu345.eclipse.eclipseai.services.fixes.ChatFixer;
+import com.github.kiu345.eclipse.eclipseai.services.fixes.OllamaQwenFixer;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService.ToolInfo;
 import com.google.common.collect.Lists;
@@ -51,12 +53,7 @@ public class AIStreamJavaHttpClient {
 
     private class StreamResponseHandler implements StreamingChatResponseHandler {
 
-        private static class JSONCallQwen {
-            @JsonProperty("name")
-            public String name;
-            @JsonProperty("arguments")
-            public Map<String, String> arguments;
-        }
+        private ChatFixer[] messageFixer = { new OllamaQwenFixer() };
 
         private StringBuilder storage;
         @SuppressWarnings("unused")
@@ -93,37 +90,29 @@ public class AIStreamJavaHttpClient {
 
         private ChatResponse analyzeResponse(ChatResponse response) {
             String data = getBuffer();
-            if (modelInfo.model().startsWith("qwen2.5-coder") && data.startsWith("{")) {
+            if (response == null) {
+                return response;
+            }
+            for (var fixer : messageFixer) {
                 try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    JSONCallQwen jsonCallQwen = mapper.readValue(data, JSONCallQwen.class);
-                    AiMessage msg = AiMessage.builder()
-                            .toolExecutionRequests(
-                                    List.of(
-                                            ToolExecutionRequest.builder()
-                                                    .name(jsonCallQwen.name)
-                                                    .arguments(mapper.writeValueAsString(jsonCallQwen.arguments))
-                                                    .build()
-                                    )
-                            )
-                            .text(response.aiMessage().text())
-                            .build();
-
-                    return ChatResponse.builder()
-                            .aiMessage(msg)
-                            .id(response.id())
-                            .metadata(response.metadata())
-                            .build();
+                    response = fixer.process(modelInfo, response, data);
                 }
                 catch (Exception e) {
                     logger.info("not able to map to function call, using element as text block: " + e.getMessage());
                 }
+
             }
             return response;
         }
 
         @Override
         public void onCompleteResponse(ChatResponse response) {
+            if (response == null) {
+                publisher.submit(new Incoming(Incoming.Type.CONTENT, "NULL"));
+                logger.warn("response is null");
+                return;
+            }
+
             logger.info("Received response of type " + response.aiMessage().type().name());
             if (isCancelled.get()) {
                 logger.info("Canceling");
@@ -137,11 +126,9 @@ public class AIStreamJavaHttpClient {
             allMessages.addAll(request.messages());
             allMessages.add(aiMessage);
 
-            List<ToolInfo> tools = toolService.findTools();
+            List<ToolInfo> tools = toolService.findTools(configuration.getWebAccess().orElse(false));
             if (response.aiMessage() != null && response.aiMessage().hasToolExecutionRequests()) {
-                logger.info("Tool exec request detected");
                 for (ToolExecutionRequest execRequest : response.aiMessage().toolExecutionRequests()) {
-
                     if (isCancelled.get()) {
                         logger.info("Canceling");
                         break;
@@ -178,7 +165,7 @@ public class AIStreamJavaHttpClient {
                         break;
                 }
 
-                ChatRequest newRequest = createRequest(allMessages, modelInfo, configuration.getUseFunctions().orElse(false));
+                ChatRequest newRequest = createRequest(allMessages, modelInfo);
                 StreamResponseHandler handler = new StreamResponseHandler(newRequest, model, modelInfo);
                 model.doChat(newRequest, handler);
             }
@@ -258,7 +245,7 @@ public class AIStreamJavaHttpClient {
         }
     }
 
-    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption, boolean withFunctions) {
+    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption) {
         OllamaChatRequestParameters.Builder paramsBuilder = OllamaChatRequestParameters.builder();
 
         String sysPrompt = preferenceStore.getString(Prompts.SYSTEM.preferenceName());
@@ -269,10 +256,10 @@ public class AIStreamJavaHttpClient {
         }
 
         paramsBuilder.modelName(desciption.model());
-        if (withFunctions) {
-            paramsBuilder.toolSpecifications(toolService.findTools().stream().map(e -> e.getTool()).toList());
+        if (configuration.getUseFunctions().orElse(false)) {
+            paramsBuilder.toolSpecifications(toolService.findTools(configuration.getWebAccess().orElse(false)).stream().map(e -> e.getTool()).toList());
         }
-        ;
+
         return ChatRequest.builder()
                 .messages(Stream.concat(Lists.newArrayList(new SystemMessage(sysPrompt)).stream(), messages.stream()).toList())
                 .parameters(paramsBuilder.build())
@@ -305,7 +292,7 @@ public class AIStreamJavaHttpClient {
 
             publisher.submit(new Incoming(Incoming.Type.CONTENT, "..."));
 
-            ChatRequest request = createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), modelInfo, configuration.getUseFunctions().orElse(false));
+            ChatRequest request = createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), modelInfo);
             StreamResponseHandler handler = new StreamResponseHandler(request, model, modelInfo);
             model.doChat(request, handler);
             /*

@@ -34,12 +34,13 @@ import jakarta.inject.Singleton;
 @Creatable
 @Singleton
 public class JavaTools {
+
     @Inject
     private ILog log;
 
-    @Tool(
-        "Get the JavaDoc for the given compilation unit.  For example,a class B defined as a member type of a class A in package x.y should have athe fully qualified name \\\"x.y.A.B\\\".Note that in order to be found, a type name (or its top level enclosingtype name) must match its corresponding compilation unit name."
-    )
+//    @Tool(
+//        "Get the JavaDoc for the given compilation unit.  For example,a class B defined as a member type of a class A in package x.y should have athe fully qualified name \\\"x.y.A.B\\\".Note that in order to be found, a type name (or its top level enclosingtype name) must match its corresponding compilation unit name."
+//    )
     public String getJavaDoc(
             @P(required = true, value = "A fully qualified name of the compilation unit") String fullyQualifiedClassName
     ) {
@@ -47,8 +48,8 @@ public class JavaTools {
         return getClassAttachedJavadoc(fullyQualifiedClassName);
     }
 
-    @Tool("Get the source for the given class.")
-    public String getSource(
+    @Tool("Get the source for the given java class. Could return NULL if source code is not available.")
+    public String getJavaSource(
             @P(required = true, value = "A fully qualified class name of the Java class") String fullyQualifiedClassName
     ) {
         log.info("called: getSource");
@@ -186,7 +187,7 @@ public class JavaTools {
      * @param javaProject             The Java project to which the class belongs.
      * @return The source code of the class, or a message indicating that the source is not available.
      */
-    protected String getAttachedSource(String fullyQualifiedClassName, IJavaProject javaProject) {
+    public String getAttachedSource(String fullyQualifiedClassName, IJavaProject javaProject) {
         try {
             // Find the type for the fully qualified class name
             IType type = javaProject.findType(fullyQualifiedClassName);
