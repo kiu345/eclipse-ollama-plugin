@@ -24,14 +24,16 @@ import dev.langchain4j.agent.tool.ToolExecutionRequest;
 import dev.langchain4j.agent.tool.ToolSpecification;
 import dev.langchain4j.agent.tool.ToolSpecifications;
 import jakarta.inject.Inject;
+import jakarta.inject.Singleton;
 
 @Creatable
+@Singleton
 public class ToolService {
     @Inject
     private ILog log;
     @Inject
     private IEclipseContext iEclipseContext;
-    
+
     private Class<?>[] classes;
 
     public static class ToolInfo {
@@ -46,20 +48,22 @@ public class ToolService {
             return tool;
         }
     }
-    
+
     public ToolService() {
         classes = new Class<?>[] {
-            SimpleAITools.class,
-            JavaTools.class
+                SimpleAITools.class,
+                WebTools.class,
+                IDETools.class,
+                JavaTools.class
         };
     }
-    
+
     public void setToolClasses(Class<?>... classes) {
         this.classes = classes;
     }
 
-    public List<ToolInfo> findTools() {
-        
+    public List<ToolInfo> findTools(boolean allowRemote) {
+
         if (classes == null || classes.length == 0) {
             return Lists.newArrayList();
         }
@@ -67,7 +71,7 @@ public class ToolService {
         try {
             for (Class<?> classInfo : classes) {
                 List<Method> methods = stream(classInfo.getDeclaredMethods())
-                        .filter(method -> method.isAnnotationPresent(Tool.class))
+                        .filter(method -> method.isAnnotationPresent(Tool.class) && (allowRemote || !method.isAnnotationPresent(WebAccess.class)))
                         .collect(toList());
                 for (Method m : methods) {
                     ToolInfo info = new ToolInfo();
@@ -84,7 +88,7 @@ public class ToolService {
     }
 
     public String executeTool(List<ToolInfo> tools, ToolExecutionRequest request) throws IOException {
-        log.info("tool call: "+request.name());
+        log.info("tool call: " + request.name());
         for (ToolInfo tool : tools) {
             if (tool.tool.name().contentEquals(request.name())) {
                 try {
@@ -108,10 +112,13 @@ public class ToolService {
 
     private Object executeTool(ToolInfo tool, String arguments) throws IOException, ReflectiveOperationException {
         Map<String, Object> params = argumentsAsMap(arguments);
-        
+        if (tool.method.getParameterCount() != params.size()) {
+            return "{ \"error\": \"invalid parameter count\"}";
+        }
+
         Object serviceObj = tool.method.getDeclaringClass().getDeclaredConstructor().newInstance();
         ContextInjectionFactory.inject(serviceObj, iEclipseContext);
-        Object[] methodParams = params.values().toArray(); 
+        Object[] methodParams = params.values().toArray();
         return tool.method.invoke(serviceObj, methodParams);
     }
 

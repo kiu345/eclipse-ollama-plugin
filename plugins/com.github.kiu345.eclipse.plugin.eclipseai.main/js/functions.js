@@ -1,3 +1,5 @@
+"use strict";
+
 var editor;
 var suggestions;
 
@@ -25,16 +27,18 @@ window.addEventListener('load', function() {
 });
 
 function addKeyCapture() {
-	elements = document.querySelectorAll('.current');
-	if (elements.length == 0)
+	editor = document.getElementById('inputarea');
+	if (editor == null) {
+		console.log('input element not found!');
 		return;
-	editor = Array.from(elements).reverse()[0];
+	}
 
 	suggestions = document.getElementById('suggestions');
 
 	editor.focus();
 	editor.addEventListener('input', handleInput);
 	editor.addEventListener('keydown', handleKeyDown);
+	console.log('input element bound');
 }
 
 function setPredefinedPrompt(command) {
@@ -116,12 +120,16 @@ function handleKeyDown(e) {
 		else {
 			switch (e.key) {
 				case 'Enter':
+					editor.removeEventListener('input', this);
+					editor.removeEventListener('keydown', this);
 					eclipseSendPrompt(editor.innerText, checkPredefinedPrompt(editor.innerText));
+					document.getElementById('content').removeChild(document.getElementById('edit_area'))
+/*
 					editor.setAttribute('contenteditable', 'false');
 					editor.parentElement.removeChild(document.getElementById('context'))
-					editor.removeEventListener('keydown', this);
 					editor.classList.remove("current");
 					editor.removeAttribute("autofocus");
+*/
 					break;
 			}
 		}
@@ -229,6 +237,38 @@ function updateSelection() {
 			item.scrollIntoView({ block: 'nearest' });
 		} else {
 			item.classList.remove('selected');
+		}
+	});
+}
+
+
+function enableDnD(id) {
+	const dropZone = document.getElementById(id);
+
+	dropZone.addEventListener('dragover', (e) => {
+		e.preventDefault();
+		dropZone.classList.add('hover');
+	});
+
+	dropZone.addEventListener('dragleave', () => {
+		dropZone.classList.remove('hover');
+	});
+
+	dropZone.addEventListener('drop', (e) => {
+		e.preventDefault();
+		dropZone.classList.remove('hover');
+
+		if (e.dataTransfer.files.length > 0) {
+			for (const file of e.dataTransfer.files) {
+				console.log('Datei:', file.name, file.size, 'bytes');
+			}
+			dropZone.textContent = e.dataTransfer.files.length + " Datei(en) gedropped";
+		}
+		else if (e.dataTransfer.types.includes('text/plain')) {
+			e.dataTransfer.getData('text/plain'); 
+			const text = e.dataTransfer.getData('text/plain');
+			console.log('Text:', text);
+			dropZone.textContent = "Text gedropped: " + text;
 		}
 	});
 }

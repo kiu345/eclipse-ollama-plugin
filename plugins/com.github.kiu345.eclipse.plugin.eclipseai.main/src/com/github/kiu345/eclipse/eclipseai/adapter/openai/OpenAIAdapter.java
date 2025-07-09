@@ -1,14 +1,17 @@
 package com.github.kiu345.eclipse.eclipseai.adapter.openai;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-
-import org.apache.commons.lang3.NotImplementedException;
+import java.util.function.Consumer;
 
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
+import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapterBase.ChatCall;
+import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
 import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 
-import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.ollama.OllamaStreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModelName;
 
 public class OpenAIAdapter implements ChatAdapter {
@@ -45,21 +48,15 @@ public class OpenAIAdapter implements ChatAdapter {
         List<ModelDescriptor> result = EnumSet
                 .allOf(OpenAiChatModelName.class)
                 .stream()
-                .map(e -> new ModelDescriptor(DEFAULT_URL, e.toString(), apiKey, "openai", e.name(), true, true, false))
+                .map(e -> new ModelDescriptor(DEFAULT_URL, e.toString(), apiKey, "openai", e.name(), Collections.emptySet()))
                 .toList();
         return result;
     }
 
-    public ChatModel getChat(String modelName) {
-//        return new OllamaChatModelBuilder()
-//                .baseUrl(apiBaseAddress)
-//                .httpClientBuilder(new JdkHttpClientBuilder())
-//                .modelName(modelName)
-//                .logRequests(true)
-//                .logResponses(true)
-//                .maxRetries(3)
-//                .timeout(Duration.ofSeconds(15))
-//                .build();
-        throw new NotImplementedException();
+    @Override
+    public ChatCall<OllamaStreamingChatModel> chatRequest(ModelDescriptor model, Consumer<Msg> newMessageConsumer, Collection<Msg> messages) {
+        // TODO Auto-generated method stub
+        return null;
     }
+
 }

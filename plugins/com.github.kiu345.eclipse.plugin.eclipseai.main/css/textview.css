@@ -2,7 +2,10 @@
 body {
     background-color: #F3F3F3;
 }
-
+p {
+    margin-block-start: 0.5em;
+    margin-block-end: 0.5em;
+}
 .chat-bubble {
     flex-direction: column;
     background-color: #222;
@@ -15,12 +18,14 @@ body {
 }
 
 .context {
+    width: 90%;
     flex-direction: column;
-    background-color: #b0b0b0;
+    background-color: #c0c0c0;
     font-family: 'Roboto', sans-serif;
+    margin-left: 0.2rem;
     margin-top: 0.0rem;
     margin-bottom: 1.0rem;
-    padding: 3pt; color : #333333;
+    padding: 3pt;
     line-height: 125%;
     font-size: 8pt;
     border-bottom-left-radius: 5px;
@@ -84,6 +89,19 @@ body {
     color: #30e582;
 }
 
+.chat-bubble table.chat {
+    border-radius: 5px;
+    border: 1px solid;
+    border-top: none;
+    border-collapse: collapse;
+    background-color: #FAFAFA;
+    font-size: 10pt;
+}
+.chat-bubble table.chat td, .chat-bubble table.chat th {
+    border: 1px solid;
+    padding: 2pt;
+}
+
 .chat-bubble.inline {
     align-self: flex-end;
     padding: .5rem;
@@ -101,6 +119,7 @@ body {
     width: 90%;
     left: 0%;
     align-self: flex-end;
+    white-space: pre-line;
     padding: .5rem;
     border-radius: 5px;
     border: 1px solid;
@@ -138,7 +157,11 @@ body {
 }
 
 .chat-bubble.me:last-child {
-    margin-bottom: 1.5rem;
+   margin-bottom: 1.5rem;
+}
+
+.chat-bubble.me.current {
+    margin-bottom: 0rem;
 }
 
 .chat-bubble.you {
@@ -205,4 +228,28 @@ body {
 .suggestion i {
     margin-right: 10px;
     font-size: 16px;
+}
+
+div.footer {
+    margin-left: 0.2rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.1rem;
+    line-height: 100%;
+    font-size: 7pt;
+    font-style: italic;
+    text-align: right;
+    color: #bbbbbb;
+}
+
+code.language-plantuml {
+    color: #000000;
+    background-color: #FFFFFF;
+    border-color: #999999;
+    border-radius: 5px;
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+    border: 1pt solid;
+    font-size: 9pt;
+    line-height: normal;
 }

@@ -26,7 +26,7 @@ public class ClientConfiguration {
     }
 
     public Optional<ModelDescriptor> getModelDescriptor(String modelName) {
-        return modelList.stream().filter(t -> t.title().equals(modelName)).findFirst();
+        return modelList.stream().filter(t -> t.name().equals(modelName)).findFirst();
     }
 
     public Optional<String> getSelectedModel() {
@@ -58,6 +58,16 @@ public class ClientConfiguration {
     public void setUseFunctions(Boolean useFunctions) {
         IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
         prefernceStore.setValue(PreferenceConstants.ECLIPSEAI_USEFUNCTIONS, useFunctions);
+    }
+
+    public Optional<Boolean> getWebAccess() {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        return Optional.of(prefernceStore.getBoolean(PreferenceConstants.ECLIPSEAI_WEBACCESS));
+    }
+
+    public void setWebAccess(Boolean useFunctions) {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        prefernceStore.setValue(PreferenceConstants.ECLIPSEAI_WEBACCESS, useFunctions);
     }
 
     public String getApiKey() {
@@ -97,15 +107,5 @@ public class ClientConfiguration {
             return null;
         }
         return Integer.parseInt(value);
-    }
-
-    public Optional<String> getConversationId() {
-        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
-        return Optional.of(prefernceStore.getString(PreferenceConstants.ECLIPSEAI_CONVERSATION_ID));
-    }
-
-    public void setConversationId(String conversationId) {
-        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
-        prefernceStore.setValue(PreferenceConstants.ECLIPSEAI_CONVERSATION_ID, conversationId);
     }
 }

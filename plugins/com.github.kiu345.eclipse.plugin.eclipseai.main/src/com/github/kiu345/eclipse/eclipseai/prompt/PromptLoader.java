@@ -21,9 +21,6 @@ public class PromptLoader {
 
     private String baseURL = BASE_URL;
 
-    public PromptLoader() {
-    }
-
     public String updatePromptText(String promptText, String... substitutions) {
         if (substitutions.length % 2 != 0) {
             throw new IllegalArgumentException("Expecting key, value pairs");

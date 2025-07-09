@@ -5,64 +5,39 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.text.StringEscapeUtils;
-import com.vladsch.flexmark.util.ast.Node;
-import com.vladsch.flexmark.html.HtmlRenderer;
-import com.vladsch.flexmark.parser.Parser;
-import com.vladsch.flexmark.util.data.MutableDataSet;
 
 /**
  * A utility class for parsing and converting a text prompt to an HTML formatted string.
  */
-public class InputParser {
+public class InputParser extends UIParser {
     private static final int DEFAULT_STATE = 0;
     private static final int CODE_BLOCK_STATE = 1;
     private static final int FUNCION_CALL_STATE = 2;
     private static final int TEXT_ATTACHMENT_STATE = 4;
 
-    private static final String TATT_CONTEXTSTART = "<|ContextStart|>";
-    private static final String TATT_FILEPREFIX = "File: ";
-    private static final String TATT_LINESPREFIX = "Lines: ";
-    private static final String TATT_CONTENTSTART = "<|ContentStart|>";
-    private static final String TATT_CONTENTEND = "<|ContentEnd|>";
-    private static final String TATT_CONTEXTEND = "<|ContextEnd|>";
-
     private int state = DEFAULT_STATE;
 
-    private final String prompt;
+    private String codeBlockId = "";
 
-    public InputParser(String prompt) {
-        this.prompt = prompt;
-    }
-
-    /**
-     * Converts the prompt text to an HTML formatted string.
-     *
-     * @return An HTML formatted string representation of the prompt text.
-     */
-    public String parseToHtml() {
+    @Override
+    public String parseToHtml(UUID msgUuid, String prompt) {
+        state = DEFAULT_STATE;
         var out = new StringBuilder();
+
+        prompt = StringEscapeUtils.escapeHtml4(prompt);
 
         try (var scanner = new Scanner(prompt)) {
             scanner.useDelimiter("\n");
 
-            // TODO: fix output for tabbed code and other content
             var codeBlockPattern = Pattern.compile("^(\\s*)```([aA-zZ]*)$");
-            var functionCallPattern = Pattern.compile("^\"function_call\".*");
             while (scanner.hasNext()) {
                 var line = scanner.next();
                 var codeBlockMatcher = codeBlockPattern.matcher(line);
-                var functionBlockMatcher = functionCallPattern.matcher(line);
 
                 if (codeBlockMatcher.find()) {
                     var indentSize = codeBlockMatcher.group(1).length();
                     var lang = codeBlockMatcher.group(2);
                     handleCodeBlock(out, lang, indentSize);
-                }
-                else if (functionBlockMatcher.find()) {
-                    handleFunctionCall(out, line);
-                }
-                else if (line.startsWith(TATT_CONTEXTSTART)) {
-                    handleTextAttachmentStart(out, line);
                 }
                 else {
                     handleNonCodeBlock(out, line, !scanner.hasNext());
@@ -83,29 +58,14 @@ public class InputParser {
 
     }
 
-    private void handleFunctionCall(StringBuilder out, String line) {
-        if ((state & FUNCION_CALL_STATE) != FUNCION_CALL_STATE) {
-            out.append(
-                    """
-                            <div class="function-call">
-                            <details><summary>Function call</summary>
-                            <pre>
-                            """ + line
-
-            );
-            state ^= FUNCION_CALL_STATE;
-
-        }
-    }
-
     private void handleNonCodeBlock(StringBuilder out, String line, boolean lastLine) {
         if ((state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) {
             out.append(StringEscapeUtils.escapeHtml4(escapeBackSlashes(line)));
         }
-        else if ((state & TEXT_ATTACHMENT_STATE) == TEXT_ATTACHMENT_STATE) {
-            handleTextAttachmentLine(out, line);
-            return;
-        }
+//        else if ((state & TEXT_ATTACHMENT_STATE) == TEXT_ATTACHMENT_STATE) {
+//            handleTextAttachmentLine(out, line);
+//            return;
+//        }
         else {
             out.append(markdown(StringEscapeUtils.escapeHtml4(line)));
         }
@@ -125,7 +85,7 @@ public class InputParser {
             out.append("<br/>");
         }
     }
-
+/*
     private void handleTextAttachmentLine(StringBuilder out, String line) {
         if (line.startsWith(TATT_FILEPREFIX)) {
             out.append("Context: " + line.substring(TATT_FILEPREFIX.length()) + ", ");
@@ -147,9 +107,7 @@ public class InputParser {
             out.append(StringEscapeUtils.escapeHtml4(line) + "<br/>");
         }
     }
-
-    private String codeBlockId = "";
-
+*/
     private void handleCodeBlock(StringBuilder out, String lang, int indent) {
         if ((state & CODE_BLOCK_STATE) != CODE_BLOCK_STATE) {
             codeBlockId = UUID.randomUUID().toString();
@@ -171,77 +129,5 @@ public class InputParser {
             state ^= CODE_BLOCK_STATE;
             codeBlockId = "";
         }
-    }
-
-    public static String escapeBackSlashes(String input) {
-        input = input.replace("\\", "\\\\");
-        return input;
-    }
-
-    public static String markdown(String input) {
-        /*
-        // Replace headers
-        input = input.replaceAll("^# (.*?)$", "<h1>$1</h1>");
-        input = input.replaceAll("^## (.*?)$", "<h2>$1</h2>");
-        input = input.replaceAll("^### (.*?)$", "<h3>$1</h3>");
-        input = input.replaceAll("^#### (.*?)$", "<h4>$1</h4>");
-        input = input.replaceAll("^##### (.*?)$", "<h5>$1</h5>");
-        input = input.replaceAll("^###### (.*?)$", "<h6>$1</h6>");
-
-        // Replace **text** with <strong>text</strong>
-        input = input.replaceAll("\\*\\*(.*?)\\*\\*", "<strong>$1</strong>");
-
-        // Replace *text* with <em>text</em>
-        input = input.replaceAll("\\*(.*?)\\*", "<em>$1</em>");
-
-        // Replace `text` with <i>text</i>
-        input = input.replaceAll("`(.*?)`", "<i>$1</i>");
-
-        // Replace ![alt text](url) with <img src="url" alt="alt text">
-        input = input.replaceAll("!\\[(.*?)\\]\\((.*?)\\)", "<img src=\"$2\" alt=\"$1\" />");
-
-        // Replace [text](url) with <a href="url">text</a>
-        input = input.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "<a href=\"$2\" target=\"_blank\">$1</a>");
-
-        // Inline code
-        input = input.replaceAll("`([^`]+)`", "<code>$1</code>");
-
-        // Links
-        input = input.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "<a href=\"$2\" target=\"_blank\">$1</a>");
-
-        // Blockquotes
-        input = input.replaceAll("^> (.*?)$", "<blockquote>$1</blockquote>");
-
-        // Unordered lists
-        input = input.replaceAll("^\\* (.*?)$", "<li>$1</li>");
-        input = input.replaceAll("^- (.*?)$", "<li>$1</li>");
-        input = input.replaceAll("^\\+ (.*?)$", "<li>$1</li>");
-
-        // Ordered lists
-//        input = input.replaceAll("^\\d+\\. (.*?)$", "<li>$1</li>");
-
-        // Horizontal Rule
-        input = input.replaceAll("^(\\*\\*\\*|---)$", "<hr>");
-*/
-        MutableDataSet options = new MutableDataSet();
-        // uncomment to set optional extensions
-        //options.set(Parser.EXTENSIONS, Arrays.asList(TablesExtension.create(), StrikethroughExtension.create()));
-        // uncomment to convert soft-breaks to hard breaks
-        //options.set(HtmlRenderer.SOFT_BREAK, "<br />\n");
-        Parser parser = Parser.builder(options).build();
-        HtmlRenderer renderer = HtmlRenderer.builder(options).build();
-
-        Node document = parser.parse(input);
-        String html = renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
-
-        return html;
-    }
-
-    public String removeLastBr(String input) {
-        if (input.trim().toUpperCase().lastIndexOf("<BR>") == input.length() - 4) {
-            return input.trim().substring(0, input.length() - 4);
-        }
-
-        return input;
     }
 }

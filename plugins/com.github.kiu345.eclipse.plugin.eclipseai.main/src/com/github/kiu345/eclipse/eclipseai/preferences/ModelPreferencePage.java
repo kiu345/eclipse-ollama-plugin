@@ -18,6 +18,7 @@ import com.github.kiu345.eclipse.eclipseai.Activator;
 import com.github.kiu345.eclipse.eclipseai.adapter.local.LocalAIAdapter;
 import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.adapter.openai.OpenAIAdapter;
+import com.github.kiu345.eclipse.eclipseai.ui.pref.AIType;
 
 public class ModelPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
