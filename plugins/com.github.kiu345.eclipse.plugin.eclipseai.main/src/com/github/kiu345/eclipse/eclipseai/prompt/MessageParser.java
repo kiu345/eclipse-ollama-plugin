@@ -30,8 +30,9 @@ public class MessageParser extends UIParser {
 
         var thinkString = "";
 
-        if (prompt.trim().equalsIgnoreCase("</think>")) {
-            return "<div class=\"thinking\">Thinking...</div>";
+        if (prompt.trim().startsWith("</think>")) {
+            out.append("<div class=\"thinking\">Thinking...</div>");
+            prompt = prompt.replaceFirst("</think>", "");
         }
 
         if (prompt.startsWith(START_THINK)) {
@@ -114,7 +115,7 @@ public class MessageParser extends UIParser {
         if (lastLine && (state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) // close opened code blocks
         {
 //            out.append("</code></pre>\n");
-            //state ^= CODE_BLOCK_STATE;
+            // state ^= CODE_BLOCK_STATE;
         }
         if ((state & CODE_BLOCK_STATE) == CODE_BLOCK_STATE) {
 //            out.append("\n");

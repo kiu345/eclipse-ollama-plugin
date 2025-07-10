@@ -99,7 +99,24 @@ class MessageParserTest {
 
             **Notes:**
             1. This test class is currently empty since the `Blubb` class has no implemented functionality""";
+    private static final String TEST7 = """
+            Hier ist ein Beispiel für eine Markdown-Tabelle:
 
+```markdown
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Inhalt 1 | Inhalt 2 | Inhalt 3 |
+| Inhalt A | Inhalt B | Inhalt C |
+```
+
+Die Tabelle wird in der IDE oder im Chat so angezeigt:
+
+| Header 1 | Header 2 | Header 3 |
+|----------|----------|----------|
+| Inhalt 1 | Inhalt 2 | Inhalt 3 |
+| Inhalt A | Inhalt B | Inhalt C |
+
+""";
     private MessageParser parser;
 
     @Test
@@ -183,6 +200,18 @@ class MessageParserTest {
 //        System.out.println(TEST6 + "\n---");
         parser = new MessageParser();
         String result = parser.parseToHtml(UUID.randomUUID(), TEST6);
+        assertThat(result).isNotNull();
+        System.out.println("----");
+        System.out.println(result);
+        System.out.println("----");
+    }
+
+    @Test
+    void testParseToHtml7() {
+//        System.out.println("MessageParserTest.testParseToHtml6()");
+//        System.out.println(TEST6 + "\n---");
+        parser = new MessageParser();
+        String result = parser.parseToHtml(UUID.randomUUID(), TEST7);
         assertThat(result).isNotNull();
         System.out.println("----");
         System.out.println(result);

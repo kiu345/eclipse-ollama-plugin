@@ -84,6 +84,19 @@ body {
     color: #30e582;
 }
 
+.chat-bubble table.chat {
+    border-radius: 5px;
+    border: 1px solid;
+    border-top: none;
+    border-collapse: collapse;
+    background-color: #FAFAFA;
+    font-size: 10pt;
+}
+.chat-bubble table.chat td, .chat-bubble table.chat th {
+    border: 1px solid;
+    padding: 2pt;
+}
+
 .chat-bubble.inline {
     align-self: flex-end;
     padding: .5rem;
