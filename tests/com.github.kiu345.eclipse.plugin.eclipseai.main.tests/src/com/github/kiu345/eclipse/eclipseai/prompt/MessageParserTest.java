@@ -130,12 +130,18 @@ class MessageParserTest {
 
     @Test
     void testParseToHtml3() {
-        System.out.println("MessageParserTest.testParseToHtml3()");
-        System.out.println(TEST3 + "\n---");
+//        System.out.println("MessageParserTest.testParseToHtml3()");
+//        System.out.println(TEST3 + "\n---");
         parser = new MessageParser();
         String result = parser.parseToHtml(UUID.randomUUID(), TEST3);
-        assertThat(result).isNotNull();
-        System.out.println(result);
+        assertThat(result)
+                .isNotNull()
+                .describedAs("Missing content")
+                .contains("<strong>The Fox of Ember Hollow</strong>")
+                .contains("&quot;Why do you fear the woods, child?&quot;")
+                .describedAs("HTML not encoded")
+                .doesNotContain("<div class=\"forest\">");
+//        System.out.println(result);
     }
 
     @Test
@@ -155,19 +161,19 @@ class MessageParserTest {
         parser = new MessageParser();
         String result1 = parser.parseToHtml(UUID.randomUUID(), TEST5_1);
         assertThat(result1)
-            .isNotNull()
-            .matches(Pattern.compile(".*<pre.*&quot;age&quot;.*</pre>.*and.*<pre.*</pre>.*",Pattern.MULTILINE|Pattern.DOTALL))
-            .contains("&quot;John Doe&quot;")
-            .contains("public class BlubbTest {")
-            .contains("public void testBlubbClass() {")
-            .contains("&quot;&lt;html&gt;Test&lt;/html&gt;&quot;");
+                .isNotNull()
+                .matches(Pattern.compile(".*<pre.*&quot;age&quot;.*</pre>.*and.*<pre.*</pre>.*", Pattern.MULTILINE | Pattern.DOTALL))
+                .contains("&quot;John Doe&quot;")
+                .contains("public class BlubbTest {")
+                .contains("public void testBlubbClass() {")
+                .contains("&quot;&lt;html&gt;Test&lt;/html&gt;&quot;");
 
 //        System.out.println(result1);
 //        System.out.println("----");
         String result2 = parser.parseToHtml(UUID.randomUUID(), TEST5_2);
         assertThat(result2)
-            .isNotNull()
-            .matches(Pattern.compile("<input type=\"button\".*<pre.*&quot;age&quot;.*</pre>",Pattern.MULTILINE|Pattern.DOTALL));
+                .isNotNull()
+                .matches(Pattern.compile("<input type=\"button\".*<pre.*&quot;age&quot;.*</pre>", Pattern.MULTILINE | Pattern.DOTALL));
 //        System.out.println(result2);
     }
 
@@ -198,6 +204,11 @@ class MessageParserTest {
         assertThat(result)
                 .isNotNull()
                 .isEqualToIgnoringNewLines("<p><em>bold</em></p>");
+
+        result = MessageParser.markdown("# Header\n## Header2");
+        assertThat(result)
+                .isNotNull()
+                .isEqualToIgnoringNewLines("<h1>Header</h1><h2>Header2</h2>");
     }
 
 }
