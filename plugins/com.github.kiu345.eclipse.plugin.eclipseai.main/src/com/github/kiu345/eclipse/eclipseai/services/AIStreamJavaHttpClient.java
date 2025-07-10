@@ -146,7 +146,7 @@ public class AIStreamJavaHttpClient {
             allMessages.addAll(request.messages());
             allMessages.add(aiMessage);
 
-            List<ToolInfo> tools = toolService.findTools();
+            List<ToolInfo> tools = toolService.findTools(configuration.getWebAccess().orElse(false));
             if (response.aiMessage() != null && response.aiMessage().hasToolExecutionRequests()) {
                 for (ToolExecutionRequest execRequest : response.aiMessage().toolExecutionRequests()) {
                     if (isCancelled.get()) {
@@ -185,7 +185,7 @@ public class AIStreamJavaHttpClient {
                         break;
                 }
 
-                ChatRequest newRequest = createRequest(allMessages, modelInfo, configuration.getUseFunctions().orElse(false));
+                ChatRequest newRequest = createRequest(allMessages, modelInfo);
                 StreamResponseHandler handler = new StreamResponseHandler(newRequest, model, modelInfo);
                 model.doChat(newRequest, handler);
             }
@@ -265,7 +265,7 @@ public class AIStreamJavaHttpClient {
         }
     }
 
-    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption, boolean withFunctions) {
+    private ChatRequest createRequest(List<dev.langchain4j.data.message.ChatMessage> messages, ModelDescriptor desciption) {
         OllamaChatRequestParameters.Builder paramsBuilder = OllamaChatRequestParameters.builder();
 
         String sysPrompt = preferenceStore.getString(Prompts.SYSTEM.preferenceName());
@@ -276,10 +276,10 @@ public class AIStreamJavaHttpClient {
         }
 
         paramsBuilder.modelName(desciption.model());
-        if (withFunctions) {
-            paramsBuilder.toolSpecifications(toolService.findTools().stream().map(e -> e.getTool()).toList());
+        if (configuration.getUseFunctions().orElse(false)) {
+            paramsBuilder.toolSpecifications(toolService.findTools(configuration.getWebAccess().orElse(false)).stream().map(e -> e.getTool()).toList());
         }
-        ;
+
         return ChatRequest.builder()
                 .messages(Stream.concat(Lists.newArrayList(new SystemMessage(sysPrompt)).stream(), messages.stream()).toList())
                 .parameters(paramsBuilder.build())
@@ -312,7 +312,7 @@ public class AIStreamJavaHttpClient {
 
             publisher.submit(new Incoming(Incoming.Type.CONTENT, "..."));
 
-            ChatRequest request = createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), modelInfo, configuration.getUseFunctions().orElse(false));
+            ChatRequest request = createRequest(prompt.messages().stream().map(this::toChatMessage).toList(), modelInfo);
             StreamResponseHandler handler = new StreamResponseHandler(request, model, modelInfo);
             model.doChat(request, handler);
             /*

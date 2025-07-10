@@ -50,6 +50,7 @@ public class ToolService {
     public ToolService() {
         classes = new Class<?>[] {
             SimpleAITools.class,
+            WebTools.class,
             IDETools.class,
             JavaTools.class
         };
@@ -59,7 +60,7 @@ public class ToolService {
         this.classes = classes;
     }
 
-    public List<ToolInfo> findTools() {
+    public List<ToolInfo> findTools(boolean allowRemote) {
         
         if (classes == null || classes.length == 0) {
             return Lists.newArrayList();
@@ -68,7 +69,7 @@ public class ToolService {
         try {
             for (Class<?> classInfo : classes) {
                 List<Method> methods = stream(classInfo.getDeclaredMethods())
-                        .filter(method -> method.isAnnotationPresent(Tool.class))
+                        .filter(method -> method.isAnnotationPresent(Tool.class) && (allowRemote || !method.isAnnotationPresent(WebAccess.class)))
                         .collect(toList());
                 for (Method m : methods) {
                     ToolInfo info = new ToolInfo();

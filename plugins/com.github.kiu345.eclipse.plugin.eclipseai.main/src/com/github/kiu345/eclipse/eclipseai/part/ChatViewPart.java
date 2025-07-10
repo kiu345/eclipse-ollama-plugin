@@ -84,7 +84,8 @@ public class ChatViewPart {
 
     @SuppressWarnings("unused")
     private Button withVision;
-    private Button withFunctionCalls;
+    private Button withToolUsage;
+    private Button allowWebAccess;
     private Scale withTemperature;
 
     @SuppressWarnings("unused")
@@ -137,7 +138,8 @@ public class ChatViewPart {
 
         modelCombo = new Combo(controls, SWT.DROP_DOWN | SWT.READ_ONLY);
         withTemperature = addScaleField(controls, "Temperature");
-        withFunctionCalls = addCheckField(controls, "with Function Calls");
+        withToolUsage = addCheckField(controls, "with tool usage");
+        allowWebAccess = addCheckField(controls, "allow web access");
 
         modelCombo.addSelectionListener(new SelectionListener() {
 
@@ -146,7 +148,8 @@ public class ChatViewPart {
                 logger.info("Setting model to " + modelCombo.getText());
                 configuration.setSelectedModel(modelCombo.getText());
                 ModelDescriptor model = httpClient.getModel(modelCombo.getText());
-                withFunctionCalls.setEnabled(model.functionCalling());
+                withToolUsage.setEnabled(model.functionCalling());
+                allowWebAccess.setEnabled(model.functionCalling());
             }
 
             @Override
@@ -154,7 +157,8 @@ public class ChatViewPart {
                 logger.info("Setting model to " + modelCombo.getText());
                 configuration.setSelectedModel(modelCombo.getText());
                 ModelDescriptor model = httpClient.getModel(modelCombo.getText());
-                withFunctionCalls.setEnabled(model.functionCalling());
+                withToolUsage.setEnabled(model.functionCalling());
+                allowWebAccess.setEnabled(model.functionCalling());
             }
         });
 
@@ -176,26 +180,41 @@ public class ChatViewPart {
         });
         withTemperature.setSelection(configuration.getTemperature().orElse(5));
 
-        withFunctionCalls.addSelectionListener(new SelectionListener() {
-
+        withToolUsage.addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent arg0) {
-                logger.info("Set function usage to " + withFunctionCalls.getSelection());
-                configuration.setUseFunctions(withFunctionCalls.getSelection());
+                logger.info("Set function usage to " + withToolUsage.getSelection());
+                configuration.setUseFunctions(withToolUsage.getSelection());
             }
 
             @Override
             public void widgetDefaultSelected(SelectionEvent arg0) {
-                logger.info("Set function usage to " + withFunctionCalls.getSelection());
-                configuration.setUseFunctions(withFunctionCalls.getSelection());
+                logger.info("Set function usage to " + withToolUsage.getSelection());
+                configuration.setUseFunctions(withToolUsage.getSelection());
+            }
+        });
+
+        allowWebAccess.addSelectionListener(new SelectionListener() {
+            @Override
+            public void widgetSelected(SelectionEvent arg0) {
+                logger.info("Set web usage to " + allowWebAccess.getSelection());
+                configuration.setWebAccess(withToolUsage.getSelection());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent arg0) {
+                logger.info("Set web usage to " + allowWebAccess.getSelection());
+                configuration.setWebAccess(allowWebAccess.getSelection());
             }
         });
 
         try {
             ModelDescriptor model = httpClient.getModel(modelCombo.getText());
             boolean supportFunctions = (model == null ? false : model.functionCalling());
-            withFunctionCalls.setEnabled(supportFunctions);
-            withFunctionCalls.setSelection(configuration.getUseFunctions().orElse(false) && supportFunctions);
+            withToolUsage.setEnabled(supportFunctions);
+            withToolUsage.setSelection(configuration.getUseFunctions().orElse(false) && supportFunctions);
+            allowWebAccess.setEnabled(supportFunctions);
+            allowWebAccess.setSelection(configuration.getWebAccess().orElse(false) && supportFunctions);
         }
         catch (Exception e) {
             logger.warn("failed to set function value: " + e.getMessage());

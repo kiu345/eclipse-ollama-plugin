@@ -60,6 +60,16 @@ public class ClientConfiguration {
         prefernceStore.setValue(PreferenceConstants.ECLIPSEAI_USEFUNCTIONS, useFunctions);
     }
 
+    public Optional<Boolean> getWebAccess() {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        return Optional.of(prefernceStore.getBoolean(PreferenceConstants.ECLIPSEAI_WEBACCESS));
+    }
+
+    public void setWebAccess(Boolean useFunctions) {
+        IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
+        prefernceStore.setValue(PreferenceConstants.ECLIPSEAI_WEBACCESS, useFunctions);
+    }
+
     public String getApiKey() {
         IPreferenceStore prefernceStore = Activator.getDefault().getPreferenceStore();
         return prefernceStore.getString(PreferenceConstants.ECLIPSEAI_API_KEY);
