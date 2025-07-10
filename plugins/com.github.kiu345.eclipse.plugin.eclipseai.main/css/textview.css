@@ -101,6 +101,7 @@ body {
     width: 90%;
     left: 0%;
     align-self: flex-end;
+    white-space: pre-line;
     padding: .5rem;
     border-radius: 5px;
     border: 1px solid;

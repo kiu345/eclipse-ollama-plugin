@@ -93,6 +93,9 @@ public class AIStreamJavaHttpClient {
 
         private ChatResponse analyzeResponse(ChatResponse response) {
             String data = getBuffer();
+            if (response == null) {
+                return response;
+            }
             if (modelInfo.model().startsWith("qwen2.5-coder") && data.startsWith("{")) {
                 try {
                     ObjectMapper mapper = new ObjectMapper();
@@ -124,6 +127,12 @@ public class AIStreamJavaHttpClient {
 
         @Override
         public void onCompleteResponse(ChatResponse response) {
+            if (response == null) {
+                publisher.submit(new Incoming(Incoming.Type.CONTENT, "NULL"));
+                logger.warn("response is null");
+                return;
+            }
+
             logger.info("Received response of type " + response.aiMessage().type().name());
             if (isCancelled.get()) {
                 logger.info("Canceling");
@@ -139,9 +148,7 @@ public class AIStreamJavaHttpClient {
 
             List<ToolInfo> tools = toolService.findTools();
             if (response.aiMessage() != null && response.aiMessage().hasToolExecutionRequests()) {
-                logger.info("Tool exec request detected");
                 for (ToolExecutionRequest execRequest : response.aiMessage().toolExecutionRequests()) {
-
                     if (isCancelled.get()) {
                         logger.info("Canceling");
                         break;

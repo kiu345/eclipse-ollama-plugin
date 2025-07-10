@@ -15,7 +15,7 @@ import org.eclipse.jdt.core.JavaCore;
 /**
  * 
  */
-public class ProjectPreferencesCommand {
+public class IDEToolsHelper {
 
     public static void getProjectPreferences(IJavaProject javaProject) {
         // Get Java version

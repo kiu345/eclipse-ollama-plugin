@@ -50,6 +50,7 @@ public class ToolService {
     public ToolService() {
         classes = new Class<?>[] {
             SimpleAITools.class,
+            IDETools.class,
             JavaTools.class
         };
     }
