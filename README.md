@@ -5,6 +5,8 @@ It makes heavy usage of the langchain4j library for model interaction.
 
 It is an Eclipse IDE plugin that brings a Large Language Model (LLM) assistant into your development environment.
 
+<p align="center"><img src="src/website/screenshot.png" width="800"></p>
+
 
 ## Features
 
@@ -19,16 +21,6 @@ It is an Eclipse IDE plugin that brings a Large Language Model (LLM) assistant i
 - Switch between defined LLMs
 
 You can also pose general questions to LLM, just like with the regular Ollama interface.
-
-## Context
-
-The plugin leverages the OpenAI API to send predefined prompts to the LLM. These prompts include relevant context from your IDE, such as:
-
-- File name
-- Content of the opened file
-- Selected class or method name
-
-Use the "Clear" button to reset the conversation context. Press the "Stop" button to halt LLM's response generation.
 
 ## Installation
 
