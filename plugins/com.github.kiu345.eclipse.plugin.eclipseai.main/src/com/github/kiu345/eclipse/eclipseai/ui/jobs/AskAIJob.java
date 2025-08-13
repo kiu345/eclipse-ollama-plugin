@@ -16,13 +16,13 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor.Features;
 import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.messaging.AgentMsg;
 import com.github.kiu345.eclipse.eclipseai.messaging.ConversationManager;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg.Source;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor.Features;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
 import com.github.kiu345.eclipse.eclipseai.services.ClientConfiguration;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService;

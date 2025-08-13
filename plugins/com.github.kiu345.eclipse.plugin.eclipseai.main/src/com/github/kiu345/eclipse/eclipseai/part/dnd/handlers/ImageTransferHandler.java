@@ -5,7 +5,7 @@ import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.ImageData;
 
-import com.github.kiu345.eclipse.eclipseai.part.ChatPresenter;
+import com.github.kiu345.eclipse.eclipseai.ui.ChatPresenter;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -26,7 +26,7 @@ public class ImageTransferHandler implements ITransferHandler {
     public void handleTransfer(Object data) {
         if (data instanceof ImageData) {
             ImageData image = (ImageData) data;
-            presenter.onAttachmentAdded(image);
+//            presenter.onAttachmentAdded(image);
         }
     }
 }

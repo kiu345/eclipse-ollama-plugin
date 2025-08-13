@@ -28,13 +28,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Scale;
 import org.eclipse.ui.PlatformUI;
 
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor.Features;
 import com.github.kiu345.eclipse.eclipseai.messaging.AgentMsg;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg.Source;
 import com.github.kiu345.eclipse.eclipseai.messaging.ToolsMsg;
 import com.github.kiu345.eclipse.eclipseai.messaging.UserMsg;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor.Features;
 import com.github.kiu345.eclipse.eclipseai.prompt.MessageParser;
 import com.github.kiu345.eclipse.eclipseai.ui.BrowserScripting.ScriptException;
 import com.github.kiu345.eclipse.eclipseai.ui.ChatPresenter.Settings;

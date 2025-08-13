@@ -15,16 +15,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.github.kiu345.eclipse.eclipseai.part.ChatPresenter;
-import com.github.kiu345.eclipse.eclipseai.prompt.ChatMessageFactory;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
+import com.github.kiu345.eclipse.eclipseai.ui.ChatPresenter;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 public class EclipseAIHandlerTemplate {
-    @Inject
-    protected ChatMessageFactory chatMessageFactory;
+//    @Inject
+//    protected ChatMessageFactory chatMessageFactory;
     @Inject
     protected ChatPresenter viewPresenter;
     @Inject
@@ -108,8 +107,8 @@ public class EclipseAIHandlerTemplate {
                     textSelection.getStartLine(),
                     textSelection.getEndLine()
             );
-            var message = chatMessageFactory.createUserChatMessage(type, context);
-            viewPresenter.onSendPredefinedPrompt(type, message);
+//            var message = chatMessageFactory.createUserChatMessage(type, context);
+//            viewPresenter.onSendPredefinedPrompt(type, message);
         }
     }
 

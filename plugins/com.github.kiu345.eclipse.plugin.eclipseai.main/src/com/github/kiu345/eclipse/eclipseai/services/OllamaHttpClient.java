@@ -5,9 +5,9 @@ import java.util.List;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.e4.core.di.annotations.Creatable;
 
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter.Config;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 
 import jakarta.inject.Inject;
 

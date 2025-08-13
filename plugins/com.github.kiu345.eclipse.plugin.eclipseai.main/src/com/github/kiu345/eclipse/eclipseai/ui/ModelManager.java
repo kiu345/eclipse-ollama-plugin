@@ -8,7 +8,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.e4.core.di.annotations.Creatable;
 
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
 
 import jakarta.inject.Singleton;
 

@@ -9,9 +9,9 @@ import java.util.function.Consumer;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapterBase.ChatCall;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.github.GitHubModelsChatModelName;

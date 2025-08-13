@@ -19,8 +19,8 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.github.kiu345.eclipse.eclipseai.part.ChatPresenter;
 import com.github.kiu345.eclipse.eclipseai.part.Attachment.FileContentAttachment;
+import com.github.kiu345.eclipse.eclipseai.ui.ChatPresenter;
 import com.google.common.collect.Sets;
 
 import jakarta.inject.Inject;
@@ -65,11 +65,11 @@ public class LocalSelectionTransferHandler implements ITransferHandler {
             if (isTextFile(file)) {
                 var documentText = new String(Files.readAllBytes(file.getLocation().toFile().toPath()), file.getCharset());
                 Document document = new Document(documentText);
-                presenter.onAttachmentAdded(new FileContentAttachment(file.getFullPath().toString(), 1, document.getNumberOfLines(), documentText));
+//                presenter.onAttachmentAdded(new FileContentAttachment(file.getFullPath().toString(), 1, document.getNumberOfLines(), documentText));
             }
             else if (isImageFile(file)) {
                 ImageData imageData = new ImageData(file.getLocation().toFile().toString());
-                presenter.onAttachmentAdded(imageData);
+//                presenter.onAttachmentAdded(imageData);
 
             }
         }
@@ -81,11 +81,11 @@ public class LocalSelectionTransferHandler implements ITransferHandler {
     private void handleCompilationUnit(ICompilationUnit compilationUnit) {
         try {
             int[] lineRange = getSelectedLineNumbers(compilationUnit);
-            presenter.onAttachmentAdded(
-                    new FileContentAttachment(
-                            compilationUnit.getPath().toString(), lineRange[0], lineRange[1], compilationUnit.getAdapter(ISourceReference.class).getSource()
-                    )
-            );
+//            presenter.onAttachmentAdded(
+//                    new FileContentAttachment(
+//                            compilationUnit.getPath().toString(), lineRange[0], lineRange[1], compilationUnit.getAdapter(ISourceReference.class).getSource()
+//                    )
+//            );
         }
         catch (Exception e) {
             logger.error(e.getMessage(), e);
