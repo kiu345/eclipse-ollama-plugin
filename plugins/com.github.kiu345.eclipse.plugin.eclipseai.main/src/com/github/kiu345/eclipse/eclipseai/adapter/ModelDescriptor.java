@@ -1,4 +1,4 @@
-package com.github.kiu345.eclipse.eclipseai.model;
+package com.github.kiu345.eclipse.eclipseai.adapter;
 
 import java.util.Set;
 

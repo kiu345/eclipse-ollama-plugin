@@ -38,11 +38,7 @@
     </elements>
   </fragments>
   <fragments xsi:type="fragment:StringModelFragment" xmi:id="_AQJWAM2tEe2ZG5Twjghs_w" featurename="descriptors" parentElementId="xpath:/">
-    <elements xsi:type="basic:PartDescriptor" xmi:id="_CF9oIM2tEe2ZG5Twjghs_w" elementId="eclipseai.partdescriptor.chatview" label="AI Assistent Chat (old)" iconURI="platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/icons/ollama32.png" category="EclipseAI" closeable="true" contributionURI="bundleclass://com.github.kiu345.eclipse.plugin.eclipseai.main/com.github.kiu345.eclipse.eclipseai.part.ChatViewPart">
-      <tags>View</tags>
-      <tags>categoryTag:EclipseAI</tags>
-    </elements>
-    <elements xsi:type="basic:PartDescriptor" xmi:id="_CF9oIM2tE86955Twjghs_w" elementId="eclipseai.partdescriptor.chatview2" label="AI Assistent Chat" iconURI="platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/icons/ollama32.png" category="EclipseAI" closeable="true" contributionURI="bundleclass://com.github.kiu345.eclipse.plugin.eclipseai.main/com.github.kiu345.eclipse.eclipseai.ui.AIChatViewPart">
+    <elements xsi:type="basic:PartDescriptor" xmi:id="_CF9oIM2tE86955Twjghs_w" elementId="eclipseai.partdescriptor.chatview2" label="Assistent Chat" iconURI="platform:/plugin/com.github.kiu345.eclipse.plugin.eclipseai.main/icons/ollama32.png" category="EclipseAI" closeable="true" contributionURI="bundleclass://com.github.kiu345.eclipse.plugin.eclipseai.main/com.github.kiu345.eclipse.eclipseai.ui.AIChatViewPart">
       <tags>View</tags>
       <tags>categoryTag:EclipseAI</tags>
     </elements>

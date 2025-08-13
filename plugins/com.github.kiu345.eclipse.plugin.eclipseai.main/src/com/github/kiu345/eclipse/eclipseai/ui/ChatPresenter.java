@@ -19,11 +19,11 @@ import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.ui.PlatformUI;
 
 import com.github.kiu345.eclipse.eclipseai.Activator;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.adapter.ollama.OllamaAdapter;
 import com.github.kiu345.eclipse.eclipseai.messaging.ConversationManager;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
 import com.github.kiu345.eclipse.eclipseai.messaging.UserMsg;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.services.ClientConfiguration;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService;
 import com.github.kiu345.eclipse.eclipseai.ui.ChatComposite.State;

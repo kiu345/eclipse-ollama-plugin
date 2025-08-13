@@ -16,13 +16,13 @@ import org.eclipse.core.runtime.ILog;
 
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapter;
 import com.github.kiu345.eclipse.eclipseai.adapter.ChatAdapterBase;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor.Features;
 import com.github.kiu345.eclipse.eclipseai.messaging.AgentMsg;
 import com.github.kiu345.eclipse.eclipseai.messaging.Msg;
 import com.github.kiu345.eclipse.eclipseai.messaging.SystemMsg;
 import com.github.kiu345.eclipse.eclipseai.messaging.ToolsMsg;
 import com.github.kiu345.eclipse.eclipseai.messaging.UserMsg;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor.Features;
 import com.github.kiu345.eclipse.eclipseai.services.ClientConfiguration;
 import com.github.kiu345.eclipse.eclipseai.services.tools.ToolService;
 import com.google.common.collect.Lists;

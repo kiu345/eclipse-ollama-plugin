@@ -19,9 +19,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.texteditor.ITextEditor;
 
-import com.github.kiu345.eclipse.eclipseai.part.ChatPresenter;
-import com.github.kiu345.eclipse.eclipseai.prompt.ChatMessageFactory;
 import com.github.kiu345.eclipse.eclipseai.prompt.Prompts;
+import com.github.kiu345.eclipse.eclipseai.ui.ChatPresenter;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -29,8 +28,8 @@ import jakarta.inject.Named;
 public class EclipseAIFixErrorsHandler {
     @Inject
     private ILog logger;
-    @Inject
-    private ChatMessageFactory chatMessageFactory;
+//    @Inject
+//    private ChatMessageFactory chatMessageFactory;
     @Inject
     private ChatPresenter viewPresenter;
 
@@ -104,8 +103,8 @@ public class EclipseAIFixErrorsHandler {
         }
         if (!errorMessages.isEmpty()) {
             var context = new Context(filePath, fileContents, errorMessages, "", "", ext, 0, 0);
-            var message = chatMessageFactory.createUserChatMessage(Prompts.FIX_ERRORS, context);
-            viewPresenter.onSendPredefinedPrompt(Prompts.FIX_ERRORS, message);
+//            var message = chatMessageFactory.createUserChatMessage(Prompts.FIX_ERRORS, context);
+//            viewPresenter.onSendPredefinedPrompt(Prompts.FIX_ERRORS, message);
         }
     }
 }

@@ -8,7 +8,7 @@ import org.eclipse.e4.core.di.annotations.Creatable;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import com.github.kiu345.eclipse.eclipseai.Activator;
-import com.github.kiu345.eclipse.eclipseai.model.ModelDescriptor;
+import com.github.kiu345.eclipse.eclipseai.adapter.ModelDescriptor;
 import com.github.kiu345.eclipse.eclipseai.preferences.PreferenceConstants;
 
 import jakarta.inject.Singleton;
